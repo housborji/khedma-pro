@@ -54,11 +54,7 @@ export default function Home() {
 
       {/* Bannière publicitaire */}
       <div className="max-w-4xl mx-auto px-4 mb-8">
-        <AdBanner
-          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
-          linkUrl="https://example.com"
-          altText="Publicité"
-        />
+        <AdBanner placeholder />
       </div>
 
       {/* Pourquoi Khedma ? */}

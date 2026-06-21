@@ -194,11 +194,7 @@ export default function DemandesPage() {
         </div>
 
         {/* Bannière pub */}
-        <AdBanner
-          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
-          linkUrl="https://example.com"
-          altText="Publicité"
-        />
+        <AdBanner placeholder />
 
         {/* Liste des demandes */}
         {loading ? (

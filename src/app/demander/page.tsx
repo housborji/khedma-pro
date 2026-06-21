@@ -200,11 +200,7 @@ export default function DemanderPage() {
 
       {/* Bannière pub */}
       <div className="max-w-2xl mx-auto mb-8">
-        <AdBanner
-          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
-          linkUrl="https://example.com"
-          altText="Publicité"
-        />
+        <AdBanner placeholder />
       </div>
 
       <Card className="max-w-2xl mx-auto">

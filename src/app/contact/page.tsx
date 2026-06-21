@@ -15,11 +15,7 @@ export default function ContactPage() {
 
       {/* Bannière publicitaire avant les cartes */}
       <div className="max-w-2xl mx-auto mb-8">
-        <AdBanner
-          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
-          linkUrl="https://example.com"
-          altText="Publicité"
-        />
+        <AdBanner placeholder />
       </div>
 
       <div className="max-w-2xl mx-auto grid gap-8 md:grid-cols-2">
