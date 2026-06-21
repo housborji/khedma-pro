@@ -17,7 +17,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Phone, MapPin, Calendar } from "lucide-react";
 import { Toaster, toast } from "sonner";
-import AdBanner from "@/components/ads/AdBanner"; // ← Import du bandeau pub
+import AdBanner from "@/components/ads/AdBanner";
 
 interface Request {
   id: string;
@@ -66,9 +66,26 @@ export default function DemandesPage() {
   const [dateDebut, setDateDebut] = useState<string>("");
   const [dateFin, setDateFin] = useState<string>("");
 
-  // États pour la suppression
+  // État pour la suppression
   const [deleteTarget, setDeleteTarget] = useState<Request | null>(null);
   const [deletePassword, setDeletePassword] = useState("");
+
+  // États pour le mode admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminTry, setAdminTry] = useState("");
+  const [showAdminInput, setShowAdminInput] = useState(false);
+
+  // Active le mode admin si le mot de passe est correct
+  const handleAdminLogin = () => {
+    if (adminTry === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setShowAdminInput(false);
+      setAdminTry("");
+      toast.success("Mode admin activé");
+    } else {
+      toast.error("Mot de passe admin incorrect");
+    }
+  };
 
   useEffect(() => {
     loadRequests();
@@ -162,6 +179,7 @@ export default function DemandesPage() {
       <Toaster position="top-center" richColors />
 
       <div className="max-w-5xl mx-auto">
+        {/* En-tête avec bouton admin */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -171,13 +189,49 @@ export default function DemandesPage() {
               Contactez directement les clients via WhatsApp
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
+          <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <Badge variant="secondary" className="text-sm">
               {requests.length} demande{requests.length !== 1 ? "s" : ""}
             </Badge>
+
+            {/* Mode admin discret */}
+            {!isAdmin && !showAdminInput && (
+              <button
+                onClick={() => setShowAdminInput(true)}
+                className="text-xs text-gray-400 hover:text-red-500 underline"
+              >
+                Admin
+              </button>
+            )}
+
+            {!isAdmin && showAdminInput && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="password"
+                  placeholder="Mot de passe"
+                  value={adminTry}
+                  onChange={(e) => setAdminTry(e.target.value)}
+                  className="w-32 h-8 text-sm"
+                />
+                <Button size="sm" onClick={handleAdminLogin} className="h-8 text-xs">
+                  OK
+                </Button>
+                <button
+                  onClick={() => setShowAdminInput(false)}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {isAdmin && (
+              <span className="text-xs text-green-600 font-medium">🛡️ Admin</span>
+            )}
           </div>
         </div>
 
+        {/* Filtres */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 flex-wrap">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium whitespace-nowrap">Du :</label>
@@ -223,13 +277,14 @@ export default function DemandesPage() {
           </Select>
         </div>
 
-        {/* Bannière publicitaire */}
+        {/* Bannière pub */}
         <AdBanner
           imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
           linkUrl="https://example.com"
           altText="Publicité"
         />
 
+        {/* Contenu */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
             <div className="animate-spin text-4xl mb-4">⏳</div>
@@ -283,16 +338,19 @@ export default function DemandesPage() {
                       <Badge variant="outline" className="text-xs shrink-0">
                         {req.category}
                       </Badge>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteTarget(req);
-                        }}
-                        className="text-gray-400 hover:text-red-500 transition ml-1"
-                        title="Supprimer cette demande"
-                      >
-                        ×
-                      </button>
+                      {/* Bouton × visible UNIQUEMENT si isAdmin */}
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(req);
+                          }}
+                          className="text-gray-400 hover:text-red-500 transition ml-1"
+                          title="Supprimer cette demande"
+                        >
+                          ×
+                        </button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -360,10 +418,7 @@ export default function DemandesPage() {
               >
                 Annuler
               </Button>
-              <Button
-                className="bg-red-600 hover:bg-red-700"
-                onClick={handleDelete}
-              >
+              <Button className="bg-red-600 hover:bg-red-700" onClick={handleDelete}>
                 Supprimer
               </Button>
             </div>
