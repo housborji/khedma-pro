@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Phone, MapPin, Calendar } from "lucide-react";
 import { Toaster, toast } from "sonner";
+import AdBanner from "@/components/ads/AdBanner"; // ← Import du bandeau pub
 
 interface Request {
   id: string;
@@ -221,6 +222,13 @@ export default function DemandesPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Bannière publicitaire */}
+        <AdBanner
+          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
+          linkUrl="https://example.com"
+          altText="Publicité"
+        />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
