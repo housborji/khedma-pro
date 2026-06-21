@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin } from "lucide-react";
+import AdBanner from "@/components/ads/AdBanner"; // ← Import
 
 export default function ContactPage() {
   return (
@@ -10,6 +11,15 @@ export default function ContactPage() {
         <p className="text-lg text-gray-600">
           Une question, une suggestion, ou vous souhaitez référencer votre entreprise ? Écrivez-nous directement.
         </p>
+      </div>
+
+      {/* Bannière publicitaire avant les cartes */}
+      <div className="max-w-2xl mx-auto mb-8">
+        <AdBanner
+          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
+          linkUrl="https://example.com"
+          altText="Publicité"
+        />
       </div>
 
       <div className="max-w-2xl mx-auto grid gap-8 md:grid-cols-2">

@@ -15,6 +15,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { toast, Toaster } from "sonner";
+import AdBanner from "@/components/ads/AdBanner"; // ← Import
 
 const CATEGORIES = [
   "Plomberie",
@@ -167,6 +168,15 @@ export default function DemanderPage() {
   return (
     <main className="min-h-screen bg-gray-50 py-12 px-4">
       <Toaster position="top-center" richColors />
+
+      {/* Bannière publicitaire avant le formulaire */}
+      <div className="max-w-2xl mx-auto mb-8">
+        <AdBanner
+          imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
+          linkUrl="https://example.com"
+          altText="Publicité"
+        />
+      </div>
 
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
