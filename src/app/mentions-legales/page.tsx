@@ -6,7 +6,7 @@ export default function MentionsLegalesPage() {
 
         <h2 className="text-xl font-semibold mt-8">Éditeur du site</h2>
         <p>
-          Le site KhedmaPro est édité par Houssem Borji, entrepreneur individuel.
+          Le site KhedmaPro est édité par Houssem Borji, entrepreneur individuel, accessible via khedmapro.com.
           <br />
           Contact : houssem241@outlook.fr | +212 658 04 83 69
         </p>
