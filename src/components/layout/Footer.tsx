@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
         {/* Colonne 1 : À propos */}
         <div>
-          <h3 className="text-xl font-bold text-white mb-4">Khedma</h3>
+          <h3 className="text-xl font-bold text-white mb-4">KhedmaPro</h3>
           <p className="text-sm leading-relaxed">
             La marketplace qui connecte directement les particuliers et les artisans qualifiés au Maroc. Sans inscription, en toute simplicité.
           </p>
@@ -36,7 +36,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
-        © 2024 Khedma. Tous droits réservés.
+        © 2024 KhedmaPro. Tous droits réservés.
       </div>
     </footer>
   );

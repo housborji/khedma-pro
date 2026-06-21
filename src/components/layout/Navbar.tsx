@@ -17,8 +17,9 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
+        {/* Logo mis à jour */}
         <Link href="/" className="text-2xl font-extrabold text-red-600">
-          Khedma<span className="text-gray-800">.ma</span>
+          KhedmaPro
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
