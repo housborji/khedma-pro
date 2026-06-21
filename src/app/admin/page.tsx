@@ -198,9 +198,19 @@ export default function AdminPage() {
                     <CardTitle>{req.title}</CardTitle>
                     <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex gap-2">
-                    <Button className="flex-1 bg-green-600" onClick={() => approve(req.id)}>✅ Approuver</Button>
-                    <Button variant="outline" className="flex-1" onClick={() => reject(req.id, req.photos)}>❌ Rejeter</Button>
+                  <CardContent className="space-y-2">
+                    {/* Affichage des photos */}
+                    {req.photos && req.photos.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {req.photos.map((url, idx) => (
+                          <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Button className="flex-1 bg-green-600" onClick={() => approve(req.id)}>✅ Approuver</Button>
+                      <Button variant="outline" className="flex-1" onClick={() => reject(req.id, req.photos)}>❌ Rejeter</Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -219,7 +229,15 @@ export default function AdminPage() {
                     <CardTitle>{req.title}</CardTitle>
                     <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-2">
+                    {/* Affichage des photos */}
+                    {req.photos && req.photos.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {req.photos.map((url, idx) => (
+                          <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
+                        ))}
+                      </div>
+                    )}
                     <Button variant="outline" className="w-full" onClick={() => deleteOpen(req.id, req.photos)}>🗑️ Supprimer</Button>
                   </CardContent>
                 </Card>
