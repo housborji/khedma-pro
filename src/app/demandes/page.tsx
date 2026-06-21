@@ -66,27 +66,6 @@ export default function DemandesPage() {
   const [dateDebut, setDateDebut] = useState<string>("");
   const [dateFin, setDateFin] = useState<string>("");
 
-  // État pour la suppression
-  const [deleteTarget, setDeleteTarget] = useState<Request | null>(null);
-  const [deletePassword, setDeletePassword] = useState("");
-
-  // États pour le mode admin
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminTry, setAdminTry] = useState("");
-  const [showAdminInput, setShowAdminInput] = useState(false);
-
-  // Active le mode admin si le mot de passe est correct
-  const handleAdminLogin = () => {
-    if (adminTry === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setIsAdmin(true);
-      setShowAdminInput(false);
-      setAdminTry("");
-      toast.success("Mode admin activé");
-    } else {
-      toast.error("Mot de passe admin incorrect");
-    }
-  };
-
   useEffect(() => {
     loadRequests();
   }, [filterCity, filterCategory, dateDebut, dateFin]);
@@ -152,34 +131,11 @@ export default function DemandesPage() {
     logContact();
   };
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      const res = await fetch("/api/requests/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          requestId: deleteTarget.id,
-          password: deletePassword,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur suppression");
-      toast.success("Demande supprimée !");
-      setDeleteTarget(null);
-      setDeletePassword("");
-      loadRequests();
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  };
-
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
       <Toaster position="top-center" richColors />
 
       <div className="max-w-5xl mx-auto">
-        {/* En-tête avec bouton admin */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -189,45 +145,10 @@ export default function DemandesPage() {
               Contactez directement les clients via WhatsApp
             </p>
           </div>
-          <div className="flex items-center gap-4 mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0">
             <Badge variant="secondary" className="text-sm">
               {requests.length} demande{requests.length !== 1 ? "s" : ""}
             </Badge>
-
-            {/* Mode admin discret */}
-            {!isAdmin && !showAdminInput && (
-              <button
-                onClick={() => setShowAdminInput(true)}
-                className="text-xs text-gray-400 hover:text-red-500 underline"
-              >
-                Admin
-              </button>
-            )}
-
-            {!isAdmin && showAdminInput && (
-              <div className="flex items-center gap-2">
-                <Input
-                  type="password"
-                  placeholder="Mot de passe"
-                  value={adminTry}
-                  onChange={(e) => setAdminTry(e.target.value)}
-                  className="w-32 h-8 text-sm"
-                />
-                <Button size="sm" onClick={handleAdminLogin} className="h-8 text-xs">
-                  OK
-                </Button>
-                <button
-                  onClick={() => setShowAdminInput(false)}
-                  className="text-xs text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            {isAdmin && (
-              <span className="text-xs text-green-600 font-medium">🛡️ Admin</span>
-            )}
           </div>
         </div>
 
@@ -334,24 +255,9 @@ export default function DemandesPage() {
                         </span>
                       </CardDescription>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        {req.category}
-                      </Badge>
-                      {/* Bouton × visible UNIQUEMENT si isAdmin */}
-                      {isAdmin && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteTarget(req);
-                          }}
-                          className="text-gray-400 hover:text-red-500 transition ml-1"
-                          title="Supprimer cette demande"
-                        >
-                          ×
-                        </button>
-                      )}
-                    </div>
+                    <Badge variant="outline" className="text-xs shrink-0">
+                      {req.category}
+                    </Badge>
                   </div>
                 </CardHeader>
 
@@ -395,36 +301,6 @@ export default function DemandesPage() {
           </div>
         )}
       </div>
-
-      {/* Modal de suppression */}
-      {deleteTarget && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-sm w-full space-y-4">
-            <h2 className="text-lg font-bold">Supprimer la demande ?</h2>
-            <p className="text-sm text-gray-600">{deleteTarget.title}</p>
-            <Input
-              type="password"
-              placeholder="Mot de passe admin"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-            />
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setDeleteTarget(null);
-                  setDeletePassword("");
-                }}
-              >
-                Annuler
-              </Button>
-              <Button className="bg-red-600 hover:bg-red-700" onClick={handleDelete}>
-                Supprimer
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

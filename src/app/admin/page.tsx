@@ -31,22 +31,35 @@ interface Request {
 }
 
 export default function AdminPage() {
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<Request[]>([]);
+  const [openRequests, setOpenRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
 
-  const loadPending = async () => {
+  const loadAll = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Demandes en attente
+      const { data: pendingData, error: pendingError } = await supabase
         .from("service_requests")
         .select("*")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setRequests(data || []);
+      if (pendingError) throw pendingError;
+      setPendingRequests(pendingData || []);
+
+      // Demandes ouvertes
+      const { data: openData, error: openError } = await supabase
+        .from("service_requests")
+        .select("*")
+        .eq("status", "open")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (openError) throw openError;
+      setOpenRequests(openData || []);
     } catch (err: any) {
       console.error(err);
       toast.error("Erreur chargement");
@@ -58,12 +71,13 @@ export default function AdminPage() {
   const handleLogin = () => {
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === "admin123") {
       setAuthenticated(true);
-      loadPending();
+      loadAll();
     } else {
       toast.error("Mot de passe incorrect");
     }
   };
 
+  // Approuver
   const approve = async (id: string) => {
     const { error } = await supabase
       .from("service_requests")
@@ -72,17 +86,29 @@ export default function AdminPage() {
     if (error) toast.error("Erreur approbation");
     else {
       toast.success("Demande approuvée");
-      loadPending();
+      loadAll();
     }
   };
 
+  // Rejeter
   const reject = async (id: string) => {
     await supabase.from("contact_logs").delete().eq("request_id", id);
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) toast.error("Erreur rejet");
     else {
       toast.success("Demande rejetée");
-      loadPending();
+      loadAll();
+    }
+  };
+
+  // Supprimer une demande déjà approuvée
+  const deleteOpen = async (id: string) => {
+    await supabase.from("contact_logs").delete().eq("request_id", id);
+    const { error } = await supabase.from("service_requests").delete().eq("id", id);
+    if (error) toast.error("Erreur suppression");
+    else {
+      toast.success("Demande supprimée");
+      loadAll();
     }
   };
 
@@ -109,46 +135,75 @@ export default function AdminPage() {
     <main className="min-h-screen bg-gray-50 py-8 px-4">
       <Toaster position="top-center" richColors />
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">🛡️ Modération des demandes</h1>
+        <h1 className="text-3xl font-bold mb-8">🛡️ Panneau d&apos;administration</h1>
+
         {loading ? (
           <p className="text-center text-gray-500">Chargement...</p>
-        ) : requests.length === 0 ? (
-          <Card className="py-12 text-center text-gray-500">Aucune demande en attente</Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {requests.map((req) => (
-              <Card key={req.id}>
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-start gap-2">
-                    <span>{req.title}</span>
-                    {req.is_urgent && <Badge variant="destructive">URGENT</Badge>}
-                  </CardTitle>
-                  <CardDescription>
-                    {req.category} • {req.city} {req.neighborhood && `, ${req.neighborhood}`} • {req.client_name} ({req.client_phone})
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {req.description && <p className="text-sm">{req.description}</p>}
-                  {req.photos && req.photos.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {req.photos.map((url, idx) => (
-                        <img key={idx} src={url} alt={`Photo ${idx}`} className="w-16 h-16 object-cover rounded border" />
-                      ))}
-                    </div>
-                  )}
-                  {req.budget_max && <p className="text-sm font-medium text-green-600">Budget: {req.budget_max} MAD</p>}
-                  <div className="flex gap-2">
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => approve(req.id)}>
-                      ✅ Approuver
-                    </Button>
-                    <Button variant="outline" className="flex-1 text-red-600 border-red-300 hover:bg-red-50" onClick={() => reject(req.id)}>
-                      ❌ Rejeter
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <>
+            {/* Demandes en attente */}
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-4">📥 Demandes en attente</h2>
+              {pendingRequests.length === 0 ? (
+                <Card className="py-8 text-center text-gray-500">Aucune demande en attente</Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {pendingRequests.map((req) => (
+                    <Card key={req.id}>
+                      <CardHeader>
+                        <CardTitle className="text-lg">{req.title}</CardTitle>
+                        <CardDescription>
+                          {req.category} • {req.city} • {req.client_name} ({req.client_phone})
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        {req.description && <p className="text-sm">{req.description}</p>}
+                        <div className="flex gap-2">
+                          <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => approve(req.id)}>
+                            ✅ Approuver
+                          </Button>
+                          <Button variant="outline" className="flex-1 text-red-600" onClick={() => reject(req.id)}>
+                            ❌ Rejeter
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Demandes approuvées */}
+            <section>
+              <h2 className="text-2xl font-bold mb-4">✅ Demandes approuvées</h2>
+              {openRequests.length === 0 ? (
+                <Card className="py-8 text-center text-gray-500">Aucune demande approuvée</Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {openRequests.map((req) => (
+                    <Card key={req.id}>
+                      <CardHeader>
+                        <CardTitle className="text-lg">{req.title}</CardTitle>
+                        <CardDescription>
+                          {req.category} • {req.city} • {req.client_name} ({req.client_phone})
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {req.description && <p className="text-sm mb-2">{req.description}</p>}
+                        <Button
+                          variant="outline"
+                          className="text-red-600 border-red-300 hover:bg-red-50"
+                          onClick={() => deleteOpen(req.id)}
+                        >
+                          🗑️ Supprimer
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
         )}
       </div>
     </main>
