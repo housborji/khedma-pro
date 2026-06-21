@@ -30,6 +30,34 @@ interface Request {
   created_at: string;
 }
 
+// Fonction pour supprimer les fichiers du bucket photos
+async function deletePhotosFromStorage(photos: string[] | null) {
+  if (!photos || photos.length === 0) return;
+
+  const filesToDelete = photos
+    .map((url) => {
+      const parts = url.split("/public/photos/");
+      return parts.length > 1 ? parts[1] : null;
+    })
+    .filter(Boolean) as string[];
+
+  if (filesToDelete.length > 0) {
+    const { error } = await supabase.storage.from("photos").remove(filesToDelete);
+    if (error) {
+      console.error("Erreur suppression fichiers:", error);
+    }
+  }
+}
+
+// Fonction pour hasher en SHA-256 (API native du navigateur)
+async function sha256(message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export default function AdminPage() {
   const [pendingRequests, setPendingRequests] = useState<Request[]>([]);
   const [openRequests, setOpenRequests] = useState<Request[]>([]);
@@ -40,7 +68,6 @@ export default function AdminPage() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      // Demandes en attente
       const { data: pendingData, error: pendingError } = await supabase
         .from("service_requests")
         .select("*")
@@ -50,7 +77,6 @@ export default function AdminPage() {
       if (pendingError) throw pendingError;
       setPendingRequests(pendingData || []);
 
-      // Demandes ouvertes
       const { data: openData, error: openError } = await supabase
         .from("service_requests")
         .select("*")
@@ -68,16 +94,34 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogin = () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === "admin123") {
-      setAuthenticated(true);
-      loadAll();
-    } else {
-      toast.error("Mot de passe incorrect");
+  const handleLogin = async () => {
+    const storedHash = process.env.NEXT_PUBLIC_ADMIN_PASSWORD_HASH;
+    console.log("Hash stocké :", storedHash);
+    console.log("Mot de passe tapé :", password);
+
+    if (!storedHash) {
+      toast.error("Hash admin introuvable (variable mal chargée)");
+      return;
+    }
+
+    try {
+      const enteredHash = await sha256(password);
+      const isCorrect = storedHash === `sha256:${enteredHash}`;
+      console.log("Hash entré :", enteredHash);
+      console.log("Résultat comparaison :", isCorrect);
+
+      if (isCorrect) {
+        setAuthenticated(true);
+        loadAll();
+      } else {
+        toast.error("Mot de passe incorrect");
+      }
+    } catch (err) {
+      console.error("Erreur :", err);
+      toast.error("Erreur technique, voir console");
     }
   };
 
-  // Approuver
   const approve = async (id: string) => {
     const { error } = await supabase
       .from("service_requests")
@@ -90,9 +134,8 @@ export default function AdminPage() {
     }
   };
 
-  // Rejeter
-  const reject = async (id: string) => {
-    // Supprimer d'abord les logs de contact éventuels
+  const reject = async (id: string, photos: string[] | null) => {
+    await deletePhotosFromStorage(photos);
     await supabase.from("contact_logs").delete().eq("request_id", id);
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) toast.error("Erreur rejet");
@@ -102,8 +145,8 @@ export default function AdminPage() {
     }
   };
 
-  // Supprimer une demande déjà approuvée
-  const deleteOpen = async (id: string) => {
+  const deleteOpen = async (id: string, photos: string[] | null) => {
+    await deletePhotosFromStorage(photos);
     await supabase.from("contact_logs").delete().eq("request_id", id);
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) toast.error("Erreur suppression");
@@ -142,7 +185,6 @@ export default function AdminPage() {
           <p className="text-center text-gray-500">Chargement...</p>
         ) : (
           <>
-            {/* Demandes en attente */}
             <section className="mb-12">
               <h2 className="text-2xl font-bold mb-4">📥 Demandes en attente</h2>
               {pendingRequests.length === 0 ? (
@@ -164,7 +206,6 @@ export default function AdminPage() {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         {req.description && <p className="text-sm">{req.description}</p>}
-                        {/* Afficher les photos */}
                         {req.photos && req.photos.length > 0 && (
                           <div className="flex flex-wrap gap-2">
                             {req.photos.map((url, idx) => (
@@ -182,7 +223,7 @@ export default function AdminPage() {
                           <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => approve(req.id)}>
                             ✅ Approuver
                           </Button>
-                          <Button variant="outline" className="flex-1 text-red-600" onClick={() => reject(req.id)}>
+                          <Button variant="outline" className="flex-1 text-red-600" onClick={() => reject(req.id, req.photos)}>
                             ❌ Rejeter
                           </Button>
                         </div>
@@ -193,7 +234,6 @@ export default function AdminPage() {
               )}
             </section>
 
-            {/* Demandes approuvées */}
             <section>
               <h2 className="text-2xl font-bold mb-4">✅ Demandes approuvées</h2>
               {openRequests.length === 0 ? (
@@ -210,7 +250,6 @@ export default function AdminPage() {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         {req.description && <p className="text-sm">{req.description}</p>}
-                        {/* Afficher les photos */}
                         {req.photos && req.photos.length > 0 && (
                           <div className="flex flex-wrap gap-2">
                             {req.photos.map((url, idx) => (
@@ -227,7 +266,7 @@ export default function AdminPage() {
                         <Button
                           variant="outline"
                           className="text-red-600 border-red-300 hover:bg-red-50"
-                          onClick={() => deleteOpen(req.id)}
+                          onClick={() => deleteOpen(req.id, req.photos)}
                         >
                           🗑️ Supprimer
                         </Button>

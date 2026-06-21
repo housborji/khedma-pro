@@ -1,20 +1,30 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+function sha256(message: string): string {
+  return crypto.createHash("sha256").update(message).digest("hex");
+}
+
 export async function POST(request: Request) {
   try {
     const { requestId, password } = await request.json();
 
-    if (password !== process.env.ADMIN_PASSWORD) {
+    const storedHash = process.env.ADMIN_PASSWORD_HASH;
+    if (!storedHash) {
+      return NextResponse.json({ error: "Configuration error" }, { status: 500 });
+    }
+    const enteredHash = sha256(password);
+    if (`sha256:${enteredHash}` !== storedHash) {
       return NextResponse.json({ error: "Mot de passe incorrect" }, { status: 403 });
     }
 
-    // Supprimer d'abord les logs de contact liés à cette demande
+    // Supprimer d'abord les logs de contact liés
     const { error: logError } = await supabaseAdmin
       .from("contact_logs")
       .delete()

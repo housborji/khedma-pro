@@ -15,7 +15,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { toast, Toaster } from "sonner";
-import AdBanner from "@/components/ads/AdBanner"; // ← Import
+import AdBanner from "@/components/ads/AdBanner";
 
 const CATEGORIES = [
   "Plomberie",
@@ -70,9 +70,26 @@ export default function DemanderPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newFiles = Array.from(files);
+
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    const MAX_SIZE = 8 * 1024 * 1024; // 8 Mo
+
+    Array.from(files).forEach((file) => {
+      if (file.size > MAX_SIZE) {
+        toast.error(`Le fichier ${file.name} dépasse 8 Mo et a été ignoré.`);
+        return;
+      }
+      newFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
+    });
+
+    if (newFiles.length === 0 && files.length > 0) {
+      toast.error("Aucun fichier valide (taille max 8 Mo).");
+      return;
+    }
+
     setSelectedFiles((prev) => [...prev, ...newFiles]);
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
     setPreviewUrls((prev) => [...prev, ...newPreviews]);
   };
 
@@ -169,7 +186,7 @@ export default function DemanderPage() {
     <main className="min-h-screen bg-gray-50 py-12 px-4">
       <Toaster position="top-center" richColors />
 
-      {/* Bannière publicitaire avant le formulaire */}
+      {/* Bannière pub */}
       <div className="max-w-2xl mx-auto mb-8">
         <AdBanner
           imageUrl="https://via.placeholder.com/800x100?text=Votre+Pub+Ici"
@@ -182,7 +199,7 @@ export default function DemanderPage() {
         <CardHeader>
           <CardTitle className="text-2xl">🔨 Publier une demande</CardTitle>
           <CardDescription>
-            Décrivez votre besoin, ajoutez des photos. Votre demande sera validée avant d&apos;être visible.
+            Décrivez votre besoin, ajoutez des photos (8 Mo max par fichier). Votre demande sera validée avant d&apos;être visible.
           </CardDescription>
         </CardHeader>
 
@@ -274,7 +291,7 @@ export default function DemanderPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">📸 Photos (optionnel)</label>
+              <label className="text-sm font-medium">📸 Photos (optionnel, max 8 Mo)</label>
               <Input
                 type="file"
                 accept="image/*"
@@ -303,7 +320,7 @@ export default function DemanderPage() {
                 </div>
               )}
               <p className="text-xs text-gray-500">
-                Vous pouvez ajouter plusieurs photos de votre problème.
+                Vous pouvez ajouter plusieurs photos (8 Mo maximum par image).
               </p>
             </div>
 
