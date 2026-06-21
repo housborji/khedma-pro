@@ -92,6 +92,7 @@ export default function AdminPage() {
 
   // Rejeter
   const reject = async (id: string) => {
+    // Supprimer d'abord les logs de contact éventuels
     await supabase.from("contact_logs").delete().eq("request_id", id);
     const { error } = await supabase.from("service_requests").delete().eq("id", id);
     if (error) toast.error("Erreur rejet");
@@ -151,13 +152,32 @@ export default function AdminPage() {
                   {pendingRequests.map((req) => (
                     <Card key={req.id}>
                       <CardHeader>
-                        <CardTitle className="text-lg">{req.title}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {req.title}
+                          {req.is_urgent && <Badge variant="destructive">URGENT</Badge>}
+                        </CardTitle>
                         <CardDescription>
-                          {req.category} • {req.city} • {req.client_name} ({req.client_phone})
+                          {req.category} • {req.city} {req.neighborhood && `, ${req.neighborhood}`}
+                          <br />
+                          {req.client_name} ({req.client_phone})
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-2">
+                      <CardContent className="space-y-3">
                         {req.description && <p className="text-sm">{req.description}</p>}
+                        {/* Afficher les photos */}
+                        {req.photos && req.photos.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {req.photos.map((url, idx) => (
+                              <img
+                                key={idx}
+                                src={url}
+                                alt={`Photo ${idx + 1}`}
+                                className="w-16 h-16 object-cover rounded border cursor-pointer hover:scale-105 transition"
+                                onClick={() => window.open(url, "_blank")}
+                              />
+                            ))}
+                          </div>
+                        )}
                         <div className="flex gap-2">
                           <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => approve(req.id)}>
                             ✅ Approuver
@@ -188,8 +208,22 @@ export default function AdminPage() {
                           {req.category} • {req.city} • {req.client_name} ({req.client_phone})
                         </CardDescription>
                       </CardHeader>
-                      <CardContent>
-                        {req.description && <p className="text-sm mb-2">{req.description}</p>}
+                      <CardContent className="space-y-3">
+                        {req.description && <p className="text-sm">{req.description}</p>}
+                        {/* Afficher les photos */}
+                        {req.photos && req.photos.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {req.photos.map((url, idx) => (
+                              <img
+                                key={idx}
+                                src={url}
+                                alt={`Photo ${idx + 1}`}
+                                className="w-16 h-16 object-cover rounded border cursor-pointer hover:scale-105 transition"
+                                onClick={() => window.open(url, "_blank")}
+                              />
+                            ))}
+                          </div>
+                        )}
                         <Button
                           variant="outline"
                           className="text-red-600 border-red-300 hover:bg-red-50"
