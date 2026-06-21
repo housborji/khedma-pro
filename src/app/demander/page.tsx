@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { toast, Toaster } from "sonner";
 import AdBanner from "@/components/ads/AdBanner";
+import TurnstileWidget from "@/components/TurnstileWidget"; // <-- Import du widget Turnstile
 
 const CATEGORIES = [
   "Plomberie",
@@ -140,6 +141,17 @@ export default function DemanderPage() {
 
     if (!isValidPhone(form.client_phone)) {
       toast.error("Numéro de téléphone invalide (ex: 0612345678)");
+      return;
+    }
+
+    // Récupérer le token Turnstile (champ caché généré automatiquement)
+    const captchaInput = document.querySelector<HTMLInputElement>(
+      '[name="cf-turnstile-response"]'
+    );
+    const captchaToken = captchaInput?.value;
+
+    if (!captchaToken) {
+      toast.error("Veuillez valider le CAPTCHA avant de publier");
       return;
     }
 
@@ -336,6 +348,9 @@ export default function DemanderPage() {
                 🚨 Demande urgente
               </label>
             </div>
+
+            {/* Widget Turnstile – rendu côté client uniquement */}
+            <TurnstileWidget />
 
             <Button
               type="submit"
