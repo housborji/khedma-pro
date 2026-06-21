@@ -11,7 +11,7 @@ export default function Home() {
       <section className="relative bg-gradient-to-br from-red-600 to-red-800 text-white py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <Badge variant="outline" className="mb-4 text-white border-white/30 text-sm px-4 py-1.5">
-            Sans inscription • 100% gratuit
+            Sans inscription • Service 100% gratuit
           </Badge>
 
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
@@ -21,7 +21,6 @@ export default function Home() {
             Publiez votre demande gratuitement, recevez des contacts d&apos;artisans vérifiés près de chez vous, directement sur WhatsApp.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {/* Bouton "Je cherche un artisan" */}
             <Link href="/demander" aria-label="Publier une demande de service">
               <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100 text-lg px-8 py-6">
                 <Search className="mr-2 h-5 w-5" aria-hidden="true" />
@@ -29,7 +28,6 @@ export default function Home() {
               </Button>
             </Link>
 
-            {/* Bouton "Je suis artisan" – CORRIGÉ */}
             <Link href="/demandes" aria-label="Voir les demandes de service">
               <Button
                 size="lg"
@@ -46,9 +44,7 @@ export default function Home() {
       {/* Bloc de contenu SEO */}
       <section className="max-w-4xl mx-auto px-4 py-12 text-center">
         <p className="text-gray-600 leading-relaxed">
-          <strong>Khedma</strong> est la plateforme marocaine qui met en relation directe les particuliers et les professionnels 
-          de la réparation et de la rénovation. En quelques clics, décrivez votre besoin, ajoutez des photos, et recevez 
-          des propositions d&apos;artisans vérifiés directement sur WhatsApp. Simple, rapide, et sans aucun frais d&apos;inscription.
+          <strong>KhedmaPro </strong> est la plateforme marocaine qui met en relation directe les particuliers et les artisans qualifiés dans tous les domaines : plomberie, électricité, peinture, menuiserie, jardinage, etc. Publiez votre demande gratuitement, décrivez votre besoin en quelques clics, ajoutez des photos, et recevez directement sur WhatsApp des contacts d&apos;artisans vérifiés près de chez vous. Simple, rapide, et sans engagement.
         </p>
       </section>
 
