@@ -39,7 +39,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 animate-fade-in">{children}</main>
         <Footer />
       </body>
     </html>

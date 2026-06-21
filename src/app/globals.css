@@ -127,9 +127,16 @@
   }
 }
 
-/* ============================================
-   CORRECTIFS POUR MOBILE
-   ============================================ */
+/* Animation de fondu pour les pages */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Correctifs mobiles */
 [role="listbox"] {
   pointer-events: auto !important;
 }

@@ -226,6 +226,12 @@ export default function DemandesPage() {
                             URGENT
                           </Badge>
                         )}
+                        {/* Badge Nouveau si moins de 24h */}
+                        {new Date(req.created_at).getTime() > Date.now() - 24 * 60 * 60 * 1000 && (
+                          <Badge variant="outline" className="text-green-600 border-green-300 text-xs">
+                            🆕 Nouveau
+                          </Badge>
+                        )}
                       </CardTitle>
                       <CardDescription className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
                         <span className="inline-flex items-center text-xs">

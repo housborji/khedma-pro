@@ -9,6 +9,7 @@ const links = [
   { href: "/", label: "Accueil" },
   { href: "/demandes", label: "Voir les demandes" },
   { href: "/comment-ca-marche", label: "Comment ça marche ?" },
+  { href: "/mentions-legales", label: "Mentions légales" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -18,12 +19,10 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
-        {/* Logo */}
         <Link href="/" className="text-2xl font-extrabold text-red-600">
           KhedmaPro
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           {links.map((link) => (
             <Link
@@ -41,7 +40,6 @@ export default function Navbar() {
           </Link>
         </nav>
 
-        {/* Mobile menu button */}
         <button
           onClick={() => setOpen(!open)}
           className="md:hidden p-2 text-gray-700 relative z-[60] pointer-events-auto"
@@ -51,7 +49,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-white border-b border-gray-200 px-4 pb-4 relative z-50">
           {links.map((link) => (
