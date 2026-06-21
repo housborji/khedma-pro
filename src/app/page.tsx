@@ -7,13 +7,11 @@ import AdBanner from "@/components/ads/AdBanner";
 export default function Home() {
   return (
     <>
-      {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-red-600 to-red-800 text-white py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <Badge variant="outline" className="mb-4 text-white border-white/30 text-sm px-4 py-1.5">
             Sans inscription • Service 100% gratuit
           </Badge>
-
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
             Trouvez l&apos;artisan qu&apos;il vous faut en 1 clic
           </h1>
@@ -27,12 +25,8 @@ export default function Home() {
                 Je cherche un artisan
               </Button>
             </Link>
-
             <Link href="/demandes" aria-label="Voir les demandes de service">
-              <Button
-                size="lg"
-                className="bg-white/10 backdrop-blur border border-white text-white hover:bg-white/20 text-lg px-8 py-6"
-              >
+              <Button size="lg" className="bg-white/10 backdrop-blur border border-white text-white hover:bg-white/20 text-lg px-8 py-6">
                 <Wrench className="mr-2 h-5 w-5" aria-hidden="true" />
                 Je suis artisan
               </Button>
@@ -41,19 +35,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Bloc de contenu SEO */}
       <section className="max-w-4xl mx-auto px-4 py-12 text-center">
         <p className="text-gray-600 leading-relaxed">
           <strong>KhedmaPro </strong> est la plateforme marocaine qui met en relation directe les particuliers et les artisans qualifiés dans tous les domaines : plomberie, électricité, peinture, menuiserie, jardinage, etc. Publiez votre demande gratuitement, décrivez votre besoin en quelques clics, ajoutez des photos, et recevez directement sur WhatsApp des contacts d&apos;artisans vérifiés près de chez vous. Simple, rapide, et sans engagement.
         </p>
       </section>
 
-      {/* Bannière publicitaire */}
       <div className="max-w-4xl mx-auto px-4 mb-8">
         <AdBanner placeholder />
       </div>
 
-      {/* Pourquoi Khedma ? */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Pourquoi choisir Khedma ?</h2>
@@ -83,7 +74,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA final */}
       <section className="py-16 bg-red-600 text-white text-center">
         <div className="max-w-3xl mx-auto px-4 space-y-6">
           <h2 className="text-3xl font-bold">Prêt à trouver le bon artisan ?</h2>

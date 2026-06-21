@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { toast, Toaster } from "sonner";
 import AdBanner from "@/components/ads/AdBanner";
-import TurnstileWidget from "@/components/TurnstileWidget"; // <-- Import du widget Turnstile
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 const CATEGORIES = [
   "Plomberie",
@@ -144,7 +144,6 @@ export default function DemanderPage() {
       return;
     }
 
-    // Récupérer le token Turnstile (champ caché généré automatiquement)
     const captchaInput = document.querySelector<HTMLInputElement>(
       '[name="cf-turnstile-response"]'
     );
@@ -198,7 +197,6 @@ export default function DemanderPage() {
     <main className="min-h-screen bg-gray-50 py-12 px-4">
       <Toaster position="top-center" richColors />
 
-      {/* Bannière pub */}
       <div className="max-w-2xl mx-auto mb-8">
         <AdBanner placeholder />
       </div>
@@ -345,7 +343,6 @@ export default function DemanderPage() {
               </label>
             </div>
 
-            {/* Widget Turnstile – rendu côté client uniquement */}
             <TurnstileWidget />
 
             <Button

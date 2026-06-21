@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin } from "lucide-react";
-import AdBanner from "@/components/ads/AdBanner"; // ← Import
+import AdBanner from "@/components/ads/AdBanner";
 
 export default function ContactPage() {
   return (
@@ -12,12 +12,9 @@ export default function ContactPage() {
           Une question, une suggestion, ou vous souhaitez référencer votre entreprise ? Écrivez-nous directement.
         </p>
       </div>
-
-      {/* Bannière publicitaire avant les cartes */}
       <div className="max-w-2xl mx-auto mb-8">
         <AdBanner placeholder />
       </div>
-
       <div className="max-w-2xl mx-auto grid gap-8 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -27,14 +24,13 @@ export default function ContactPage() {
             <CardDescription>Contactez-nous par message</CardDescription>
           </CardHeader>
           <CardContent>
-            <a href="https://wa.me/212658048369?text=Bonjour%20Khedma%20!" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/212658048369?text=Bonjour%20KhedmaPro%20!" target="_blank" rel="noopener noreferrer">
               <Button className="w-full bg-green-500 hover:bg-green-600">
                 Ouvrir WhatsApp
               </Button>
             </a>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -51,7 +47,6 @@ export default function ContactPage() {
           </CardContent>
         </Card>
       </div>
-
       <div className="max-w-md mx-auto mt-8 text-center text-gray-500 flex items-center justify-center gap-2">
         <MapPin className="h-4 w-4" /> Rabat, Maroc
       </div>

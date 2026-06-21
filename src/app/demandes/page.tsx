@@ -73,7 +73,6 @@ export default function DemandesPage() {
   const loadRequests = async () => {
     setLoading(true);
     try {
-      // Exclure les demandes plus vieilles que 3 mois
       const troisMoisAvant = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
       let query = supabase
@@ -119,7 +118,6 @@ export default function DemandesPage() {
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
 
-    // Logger le contact
     supabase.from("contact_logs").insert({
       request_id: request.id,
       provider_name: "Artisan",
@@ -147,7 +145,6 @@ export default function DemandesPage() {
           </div>
         </div>
 
-        {/* Filtres */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 flex-wrap">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium whitespace-nowrap">Du :</label>
@@ -193,10 +190,8 @@ export default function DemandesPage() {
           </Select>
         </div>
 
-        {/* Bannière pub */}
         <AdBanner placeholder />
 
-        {/* Liste des demandes */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
             <div className="animate-spin text-4xl mb-4">⏳</div>
@@ -259,7 +254,6 @@ export default function DemandesPage() {
                     </p>
                   )}
 
-                  {/* Photos */}
                   {req.photos && req.photos.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {req.photos.map((url, idx) => (
