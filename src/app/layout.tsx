@@ -14,9 +14,12 @@ const arabic = Noto_Naskh_Arabic({
   variable: "--font-arabic",
 });
 
+// Métadonnées principales pour le SEO
 export const metadata: Metadata = {
-  title: "Khedma - Services à domicile au Maroc",
-  description: "Trouvez un artisan de confiance près de chez vous, sans inscription.",
+  // Titre optimisé pour le SEO
+  title: "Khedma - Trouvez un artisan qualifié près de chez vous au Maroc",
+  description:
+    "Khedma connecte directement les particuliers et les artisans au Maroc. Publiez votre demande gratuitement et recevez des devis directement sur WhatsApp, sans inscription.",
 };
 
 export default function RootLayout({
@@ -29,10 +32,17 @@ export default function RootLayout({
       <head>
         {/* PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
-        {/* Favicon (utilise la même icône 192x192) */}
+        {/* Favicon (icône de l'onglet) */}
         <link rel="icon" href="/icons/home1.png" sizes="192x192" type="image/png" />
-        {/* Couleur de thème (barre de statut) */}
+        {/* Couleur du thème pour la barre de statut */}
         <meta name="theme-color" content="#dc2626" />
+
+        {/* Balises Open Graph pour le partage sur les réseaux sociaux */}
+        <meta property="og:title" content="Khedma - Trouvez un artisan qualifié près de chez vous au Maroc" />
+        <meta property="og:description" content="Khedma connecte directement les particuliers et les artisans. Publiez votre demande gratuitement et recevez des devis sur WhatsApp, sans inscription." />
+        <meta property="og:image" content="https://khedma-pro.vercel.app/icons/home.png" />
+        <meta property="og:url" content="https://khedma-pro.vercel.app" />
+        <meta property="og:type" content="website" />
       </head>
       <body className="min-h-screen flex flex-col bg-white">
         <Navbar />

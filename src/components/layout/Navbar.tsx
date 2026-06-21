@@ -40,9 +40,8 @@ export default function Navbar() {
 
         <button
           onClick={() => setOpen(!open)}
-          className="md:hidden p-2 text-gray-700 relative z-[60] pointer-events-auto touch-auto"
-          style={{ touchAction: "manipulation" }}
-          aria-label="Menu"
+          className="md:hidden p-2 text-gray-700 relative z-[60] pointer-events-auto"
+          aria-label="Menu principal"
         >
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
