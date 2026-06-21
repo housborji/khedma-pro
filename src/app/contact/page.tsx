@@ -13,7 +13,7 @@ export default function ContactPage() {
         </p>
       </div>
       <div className="max-w-2xl mx-auto mb-8">
-        <AdBanner placeholder />
+        <AdBanner />
       </div>
       <div className="max-w-2xl mx-auto grid gap-8 md:grid-cols-2">
         <Card>

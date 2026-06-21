@@ -190,7 +190,7 @@ export default function DemandesPage() {
           </Select>
         </div>
 
-        <AdBanner placeholder />
+        <AdBanner />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">

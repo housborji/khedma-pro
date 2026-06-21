@@ -42,7 +42,7 @@ export default function Home() {
       </section>
 
       <div className="max-w-4xl mx-auto px-4 mb-8">
-        <AdBanner placeholder />
+        <AdBanner />
       </div>
 
       <section className="py-16 bg-white">

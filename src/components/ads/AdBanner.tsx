@@ -1,47 +1,57 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
-interface AdBannerProps {
-  imageUrl?: string;
-  linkUrl?: string;
-  altText?: string;
-  placeholder?: boolean; // mode "espace disponible"
-}
+export default function AdBanner() {
+  const [ad, setAd] = useState<any>(null);
 
-export default function AdBanner({ imageUrl, linkUrl, altText = "Publicité", placeholder = false }: AdBannerProps) {
-  // Mode placeholder pro
-  if (placeholder) {
+  useEffect(() => {
+    supabase
+      .from("ads")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+      .then(({ data }) => {
+        if (data) setAd(data);
+      });
+  }, []);
+
+  // Si une pub active existe, on l'affiche
+  if (ad) {
     return (
       <div className="my-6">
-        <Link href="/contact">
-          <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all shadow-md hover:shadow-lg">
-            <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-5 gap-4">
-              <div className="text-white">
-                <p className="text-lg font-bold">📢 Votre espace publicitaire ici</p>
-                <p className="text-sm text-red-100 mt-1">
-                  Touchez des centaines d&apos;artisans et de clients chaque jour
-                </p>
-              </div>
-              <div className="bg-white text-red-600 font-semibold px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition whitespace-nowrap">
-                Contactez-nous
-              </div>
-            </div>
-          </div>
+        <Link href={ad.link_url} target="_blank" rel="noopener noreferrer">
+          <img
+            src={ad.image_url}
+            alt={ad.alt_text || "Publicité"}
+            className="w-full h-24 object-cover rounded-lg shadow hover:shadow-md transition-shadow"
+          />
         </Link>
         <p className="text-xs text-gray-400 mt-1 text-center">Annonce</p>
       </div>
     );
   }
 
-  // Mode image existante
+  // Sinon, le placeholder professionnel
   return (
     <div className="my-6">
-      <Link href={linkUrl || "#"} target="_blank" rel="noopener noreferrer">
-        <div className="relative overflow-hidden rounded-lg border bg-gray-100 hover:shadow-md transition-shadow">
-          <img
-            src={imageUrl}
-            alt={altText}
-            className="w-full h-24 object-cover"
-          />
+      <Link href="/contact">
+        <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all shadow-md hover:shadow-lg">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-5 gap-4">
+            <div className="text-white">
+              <p className="text-lg font-bold">📢 Votre espace publicitaire ici</p>
+              <p className="text-sm text-red-100 mt-1">
+                Touchez des centaines d&apos;artisans et de clients chaque jour
+              </p>
+            </div>
+            <div className="bg-white text-red-600 font-semibold px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition whitespace-nowrap">
+              Contactez-nous
+            </div>
+          </div>
         </div>
       </Link>
       <p className="text-xs text-gray-400 mt-1 text-center">Annonce</p>

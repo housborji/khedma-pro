@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast, Toaster } from "sonner";
+import crypto from "crypto";
 
+// Types
 interface Request {
   id: string;
   client_name: string;
@@ -30,32 +32,31 @@ interface Request {
   created_at: string;
 }
 
+interface Ad {
+  id: string;
+  title: string;
+  image_url: string;
+  link_url: string;
+  alt_text: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 // Fonction pour supprimer les fichiers du bucket photos
 async function deletePhotosFromStorage(photos: string[] | null) {
   if (!photos || photos.length === 0) return;
-
   const filesToDelete = photos
     .map((url) => {
       const parts = url.split("/public/photos/");
       return parts.length > 1 ? parts[1] : null;
     })
     .filter(Boolean) as string[];
-
   if (filesToDelete.length > 0) {
     const { error } = await supabase.storage.from("photos").remove(filesToDelete);
     if (error) {
       console.error("Erreur suppression fichiers:", error);
     }
   }
-}
-
-// Fonction pour hasher en SHA-256 (API native du navigateur)
-async function sha256(message: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export default function AdminPage() {
@@ -65,112 +66,117 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
 
+  // État pour la gestion des pubs
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [newAd, setNewAd] = useState({ title: "", image_url: "", link_url: "", alt_text: "Publicité" });
+
   const loadAll = async () => {
     setLoading(true);
     try {
-      const { data: pendingData, error: pendingError } = await supabase
+      const { data: pendingData } = await supabase
         .from("service_requests")
         .select("*")
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-
-      if (pendingError) throw pendingError;
       setPendingRequests(pendingData || []);
 
-      const { data: openData, error: openError } = await supabase
+      const { data: openData } = await supabase
         .from("service_requests")
         .select("*")
         .eq("status", "open")
         .order("created_at", { ascending: false })
         .limit(50);
-
-      if (openError) throw openError;
       setOpenRequests(openData || []);
-    } catch (err: any) {
+
+      // Charger les pubs
+      const { data: adsData } = await supabase
+        .from("ads")
+        .select("*")
+        .order("created_at", { ascending: false });
+      setAds(adsData || []);
+    } catch (err) {
       console.error(err);
-      toast.error("Erreur chargement");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     const storedHash = process.env.NEXT_PUBLIC_ADMIN_PASSWORD_HASH;
-    console.log("Hash stocké :", storedHash);
-    console.log("Mot de passe tapé :", password);
-
     if (!storedHash) {
-      toast.error("Hash admin introuvable (variable mal chargée)");
+      toast.error("Erreur de configuration");
       return;
     }
-
-    try {
-      const enteredHash = await sha256(password);
-      const isCorrect = storedHash === `sha256:${enteredHash}`;
-      console.log("Hash entré :", enteredHash);
-      console.log("Résultat comparaison :", isCorrect);
-
-      if (isCorrect) {
-        setAuthenticated(true);
-        loadAll();
-      } else {
-        toast.error("Mot de passe incorrect");
-      }
-    } catch (err) {
-      console.error("Erreur :", err);
-      toast.error("Erreur technique, voir console");
+    const enteredHash = crypto.createHash("sha256").update(password).digest("hex");
+    if (`sha256:${enteredHash}` === storedHash) {
+      setAuthenticated(true);
+      loadAll();
+    } else {
+      toast.error("Mot de passe incorrect");
     }
   };
 
   const approve = async (id: string) => {
-    const { error } = await supabase
-      .from("service_requests")
-      .update({ status: "open" })
-      .eq("id", id);
-    if (error) toast.error("Erreur approbation");
-    else {
-      toast.success("Demande approuvée");
-      loadAll();
-    }
+    const { error } = await supabase.from("service_requests").update({ status: "open" }).eq("id", id);
+    if (error) toast.error("Erreur");
+    else { toast.success("Approuvée"); loadAll(); }
   };
 
   const reject = async (id: string, photos: string[] | null) => {
     await deletePhotosFromStorage(photos);
     await supabase.from("contact_logs").delete().eq("request_id", id);
-    const { error } = await supabase.from("service_requests").delete().eq("id", id);
-    if (error) toast.error("Erreur rejet");
-    else {
-      toast.success("Demande rejetée");
-      loadAll();
-    }
+    await supabase.from("service_requests").delete().eq("id", id);
+    toast.success("Rejetée");
+    loadAll();
   };
 
   const deleteOpen = async (id: string, photos: string[] | null) => {
     await deletePhotosFromStorage(photos);
     await supabase.from("contact_logs").delete().eq("request_id", id);
-    const { error } = await supabase.from("service_requests").delete().eq("id", id);
-    if (error) toast.error("Erreur suppression");
+    await supabase.from("service_requests").delete().eq("id", id);
+    toast.success("Supprimée");
+    loadAll();
+  };
+
+  // Gestion des pubs
+  const addAd = async () => {
+    if (!newAd.title || !newAd.image_url || !newAd.link_url) {
+      toast.error("Tous les champs sont requis");
+      return;
+    }
+    const { error } = await supabase.from("ads").insert(newAd);
+    if (error) toast.error("Erreur ajout pub");
     else {
-      toast.success("Demande supprimée");
+      toast.success("Pub ajoutée");
+      setNewAd({ title: "", image_url: "", link_url: "", alt_text: "Publicité" });
       loadAll();
     }
   };
 
+  const toggleAd = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase.from("ads").update({ is_active: !currentStatus }).eq("id", id);
+    if (error) toast.error("Erreur");
+    else { toast.success(currentStatus ? "Pub désactivée" : "Pub activée"); loadAll(); }
+  };
+
+  const deleteAd = async (id: string) => {
+    const { error } = await supabase.from("ads").delete().eq("id", id);
+    if (error) toast.error("Erreur suppression");
+    else { toast.success("Pub supprimée"); loadAll(); }
+  };
+
   if (!authenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm space-y-4">
-          <h1 className="text-2xl font-bold text-center">🔐 Admin</h1>
-          <Input
-            type="password"
-            placeholder="Mot de passe admin"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button className="w-full bg-red-600 hover:bg-red-700" onClick={handleLogin}>
-            Connexion
-          </Button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>🔐 Admin</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Button className="w-full bg-red-600" onClick={handleLogin}>Connexion</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -178,106 +184,86 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
       <Toaster position="top-center" richColors />
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">🛡️ Panneau d&apos;administration</h1>
+      <div className="max-w-6xl mx-auto space-y-12">
+        <h1 className="text-3xl font-bold">🛡️ Administration</h1>
 
-        {loading ? (
-          <p className="text-center text-gray-500">Chargement...</p>
-        ) : (
-          <>
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold mb-4">📥 Demandes en attente</h2>
-              {pendingRequests.length === 0 ? (
-                <Card className="py-8 text-center text-gray-500">Aucune demande en attente</Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {pendingRequests.map((req) => (
-                    <Card key={req.id}>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          {req.title}
-                          {req.is_urgent && <Badge variant="destructive">URGENT</Badge>}
-                        </CardTitle>
-                        <CardDescription>
-                          {req.category} • {req.city} {req.neighborhood && `, ${req.neighborhood}`}
-                          <br />
-                          {req.client_name} ({req.client_phone})
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {req.description && <p className="text-sm">{req.description}</p>}
-                        {req.photos && req.photos.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {req.photos.map((url, idx) => (
-                              <img
-                                key={idx}
-                                src={url}
-                                alt={`Photo ${idx + 1}`}
-                                className="w-16 h-16 object-cover rounded border cursor-pointer hover:scale-105 transition"
-                                onClick={() => window.open(url, "_blank")}
-                              />
-                            ))}
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => approve(req.id)}>
-                            ✅ Approuver
-                          </Button>
-                          <Button variant="outline" className="flex-1 text-red-600" onClick={() => reject(req.id, req.photos)}>
-                            ❌ Rejeter
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </section>
+        {/* Demandes en attente */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">📥 Demandes en attente</h2>
+          {pendingRequests.length === 0 ? <p>Aucune</p> : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {pendingRequests.map((req) => (
+                <Card key={req.id}>
+                  <CardHeader>
+                    <CardTitle>{req.title}</CardTitle>
+                    <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex gap-2">
+                    <Button className="flex-1 bg-green-600" onClick={() => approve(req.id)}>✅ Approuver</Button>
+                    <Button variant="outline" className="flex-1" onClick={() => reject(req.id, req.photos)}>❌ Rejeter</Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4">✅ Demandes approuvées</h2>
-              {openRequests.length === 0 ? (
-                <Card className="py-8 text-center text-gray-500">Aucune demande approuvée</Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {openRequests.map((req) => (
-                    <Card key={req.id}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">{req.title}</CardTitle>
-                        <CardDescription>
-                          {req.category} • {req.city} • {req.client_name} ({req.client_phone})
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {req.description && <p className="text-sm">{req.description}</p>}
-                        {req.photos && req.photos.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {req.photos.map((url, idx) => (
-                              <img
-                                key={idx}
-                                src={url}
-                                alt={`Photo ${idx + 1}`}
-                                className="w-16 h-16 object-cover rounded border cursor-pointer hover:scale-105 transition"
-                                onClick={() => window.open(url, "_blank")}
-                              />
-                            ))}
-                          </div>
-                        )}
-                        <Button
-                          variant="outline"
-                          className="text-red-600 border-red-300 hover:bg-red-50"
-                          onClick={() => deleteOpen(req.id, req.photos)}
-                        >
-                          🗑️ Supprimer
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </section>
-          </>
-        )}
+        {/* Demandes approuvées */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">✅ Demandes approuvées</h2>
+          {openRequests.length === 0 ? <p>Aucune</p> : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {openRequests.map((req) => (
+                <Card key={req.id}>
+                  <CardHeader>
+                    <CardTitle>{req.title}</CardTitle>
+                    <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" onClick={() => deleteOpen(req.id, req.photos)}>🗑️ Supprimer</Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Gestion des publicités */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">📢 Gestion des publicités</h2>
+          <Card className="mb-6">
+            <CardHeader><CardTitle>Ajouter une publicité</CardTitle></CardHeader>
+            <CardContent className="grid gap-4">
+              <Input placeholder="Nom de l'annonceur" value={newAd.title} onChange={(e) => setNewAd({ ...newAd, title: e.target.value })} />
+              <Input placeholder="URL de l'image" value={newAd.image_url} onChange={(e) => setNewAd({ ...newAd, image_url: e.target.value })} />
+              <Input placeholder="Lien du site" value={newAd.link_url} onChange={(e) => setNewAd({ ...newAd, link_url: e.target.value })} />
+              <Button onClick={addAd}>Ajouter la publicité</Button>
+            </CardContent>
+          </Card>
+          <div className="grid md:grid-cols-2 gap-4">
+            {ads.map((ad) => (
+              <Card key={ad.id} className={!ad.is_active ? "opacity-50" : ""}>
+                <CardHeader>
+                  <CardTitle className="flex justify-between">
+                    {ad.title}
+                    <Badge variant={ad.is_active ? "default" : "secondary"}>
+                      {ad.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription className="truncate">{ad.link_url}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => toggleAd(ad.id, ad.is_active)}>
+                    {ad.is_active ? "Désactiver" : "Activer"}
+                  </Button>
+                  <Button variant="outline" className="flex-1 text-red-600" onClick={() => deleteAd(ad.id)}>
+                    Supprimer
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );

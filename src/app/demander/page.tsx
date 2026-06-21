@@ -198,7 +198,7 @@ export default function DemanderPage() {
       <Toaster position="top-center" richColors />
 
       <div className="max-w-2xl mx-auto mb-8">
-        <AdBanner placeholder />
+        <AdBanner />
       </div>
 
       <Card className="max-w-2xl mx-auto">
