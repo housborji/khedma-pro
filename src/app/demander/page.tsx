@@ -51,6 +51,10 @@ interface FormData {
   is_urgent: boolean;
 }
 
+// Limite de photos
+const MAX_PHOTOS = 3;
+const MAX_SIZE = 8 * 1024 * 1024; // 8 Mo
+
 export default function DemanderPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -72,21 +76,29 @@ export default function DemanderPage() {
     const files = e.target.files;
     if (!files) return;
 
+    const currentTotal = selectedFiles.length;
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
-    const MAX_SIZE = 8 * 1024 * 1024; // 8 Mo
 
     Array.from(files).forEach((file) => {
+      // Vérifier la limite du nombre de photos
+      if (currentTotal + newFiles.length >= MAX_PHOTOS) {
+        toast.error(`Vous ne pouvez pas ajouter plus de ${MAX_PHOTOS} photos.`);
+        return;
+      }
+
+      // Vérifier la taille
       if (file.size > MAX_SIZE) {
         toast.error(`Le fichier ${file.name} dépasse 8 Mo et a été ignoré.`);
         return;
       }
+
       newFiles.push(file);
       newPreviews.push(URL.createObjectURL(file));
     });
 
     if (newFiles.length === 0 && files.length > 0) {
-      toast.error("Aucun fichier valide (taille max 8 Mo).");
+      toast.error("Aucun fichier valide (taille max 8 Mo ou nombre max 3 photos atteint).");
       return;
     }
 
@@ -205,7 +217,7 @@ export default function DemanderPage() {
         <CardHeader>
           <CardTitle className="text-2xl">🔨 Publier une demande</CardTitle>
           <CardDescription>
-            Décrivez votre besoin, ajoutez des photos (8 Mo max par fichier). Votre demande sera validée avant d&apos;être visible.
+            Décrivez votre besoin, ajoutez jusqu&apos;à {MAX_PHOTOS} photos (8 Mo max par fichier). Votre demande sera validée avant d&apos;être visible.
           </CardDescription>
         </CardHeader>
 
@@ -297,7 +309,7 @@ export default function DemanderPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">📸 Photos (optionnel, max 8 Mo)</label>
+              <label className="text-sm font-medium">📸 Photos (optionnel, max {MAX_PHOTOS} photos, 8 Mo par image)</label>
               <Input
                 type="file"
                 accept="image/*"
@@ -326,7 +338,7 @@ export default function DemanderPage() {
                 </div>
               )}
               <p className="text-xs text-gray-500">
-                Vous pouvez ajouter plusieurs photos (8 Mo maximum par image).
+                Vous pouvez ajouter jusqu&apos;à {MAX_PHOTOS} photos (8 Mo maximum par image).
               </p>
             </div>
 
