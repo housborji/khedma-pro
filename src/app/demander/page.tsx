@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { toast, Toaster } from "sonner";
 import AdBanner from "@/components/ads/AdBanner";
-import TurnstileWidget from "@/components/TurnstileWidget";
+import ReCaptchaWidget from "@/components/ReCaptchaWidget";
 
 const CATEGORIES = [
   "Plomberie",
@@ -51,7 +51,6 @@ interface FormData {
   is_urgent: boolean;
 }
 
-// Limite de photos
 const MAX_PHOTOS = 3;
 const MAX_SIZE = 8 * 1024 * 1024; // 8 Mo
 
@@ -81,18 +80,14 @@ export default function DemanderPage() {
     const newPreviews: string[] = [];
 
     Array.from(files).forEach((file) => {
-      // Vérifier la limite du nombre de photos
       if (currentTotal + newFiles.length >= MAX_PHOTOS) {
         toast.error(`Vous ne pouvez pas ajouter plus de ${MAX_PHOTOS} photos.`);
         return;
       }
-
-      // Vérifier la taille
       if (file.size > MAX_SIZE) {
         toast.error(`Le fichier ${file.name} dépasse 8 Mo et a été ignoré.`);
         return;
       }
-
       newFiles.push(file);
       newPreviews.push(URL.createObjectURL(file));
     });
@@ -156,10 +151,8 @@ export default function DemanderPage() {
       return;
     }
 
-    const captchaInput = document.querySelector<HTMLInputElement>(
-      '[name="cf-turnstile-response"]'
-    );
-    const captchaToken = captchaInput?.value;
+    // Récupérer le token reCAPTCHA
+    const captchaToken = window.grecaptcha?.getResponse();
 
     if (!captchaToken) {
       toast.error("Veuillez valider le CAPTCHA avant de publier");
@@ -355,7 +348,7 @@ export default function DemanderPage() {
               </label>
             </div>
 
-            <TurnstileWidget />
+            <ReCaptchaWidget />
 
             <Button
               type="submit"
