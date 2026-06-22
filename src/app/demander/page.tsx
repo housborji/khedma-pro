@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { toast, Toaster } from "sonner";
 import AdBanner from "@/components/ads/AdBanner";
-import ReCaptchaWidget from "@/components/ReCaptchaWidget";
 
 const CATEGORIES = [
   "Plomberie",
@@ -148,14 +147,6 @@ export default function DemanderPage() {
 
     if (!isValidPhone(form.client_phone)) {
       toast.error("Numéro de téléphone invalide (ex: 0612345678)");
-      return;
-    }
-
-    // Récupérer le token reCAPTCHA
-    const captchaToken = window.grecaptcha?.getResponse();
-
-    if (!captchaToken) {
-      toast.error("Veuillez valider le CAPTCHA avant de publier");
       return;
     }
 
@@ -347,8 +338,6 @@ export default function DemanderPage() {
                 🚨 Demande urgente
               </label>
             </div>
-
-            <ReCaptchaWidget />
 
             <Button
               type="submit"
