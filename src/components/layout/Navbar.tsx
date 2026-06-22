@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 
 const links = [
   { href: "/", label: "Accueil" },
-  { href: "/demandes", label: "Voir les demandes" },
+  { href: "/demandes", label: "Demandes / Snay3i" },
   { href: "/comment-ca-marche", label: "Comment ça marche ?" },
   { href: "/mentions-legales", label: "Mentions légales" },
   { href: "/contact", label: "Contact" },
@@ -35,7 +35,7 @@ export default function Navbar() {
           ))}
           <Link href="/demander">
             <Button className="bg-red-600 hover:bg-red-700 text-sm">
-              Publier une demande
+              Je suis artisan / M3alem
             </Button>
           </Link>
         </nav>
@@ -63,7 +63,7 @@ export default function Navbar() {
           ))}
           <Link href="/demander" onClick={() => setOpen(false)}>
             <Button className="w-full mt-4 bg-red-600 hover:bg-red-700 text-sm">
-              Publier une demande
+              Je suis artisan / M3alem
             </Button>
           </Link>
         </div>

@@ -238,11 +238,11 @@ export default function AdminPage() {
                     <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {/* Affichage des photos */}
+                    {/* Affichage des photos avec attribut alt optimisé */}
                     {req.photos && req.photos.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {req.photos.map((url, idx) => (
-                          <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
+                          <img key={idx} src={url} alt={`Photo de la demande - snay3i, m3alem, artisan`} className="w-16 h-16 object-cover rounded" />
                         ))}
                       </div>
                     )}
@@ -269,11 +269,11 @@ export default function AdminPage() {
                     <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {/* Affichage des photos */}
+                    {/* Affichage des photos avec attribut alt optimisé */}
                     {req.photos && req.photos.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {req.photos.map((url, idx) => (
-                          <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
+                          <img key={idx} src={url} alt={`Photo de la demande - snay3i, m3alem, artisan`} className="w-16 h-16 object-cover rounded" />
                         ))}
                       </div>
                     )}

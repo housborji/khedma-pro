@@ -260,13 +260,14 @@ export default function DemandesPage() {
                     </p>
                   )}
 
+                  {/* Photos avec attribut alt optimisé */}
                   {req.photos && req.photos.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {req.photos.map((url, idx) => (
                         <img
                           key={idx}
                           src={url}
-                          alt={`Photo ${idx + 1}`}
+                          alt={`Photo d'une demande de service - snay3i, m3alem, artisan au Maroc`}
                           className="w-16 h-16 object-cover rounded border cursor-pointer hover:scale-105 transition"
                           onClick={() => window.open(url, "_blank")}
                         />

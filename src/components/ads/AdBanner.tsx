@@ -20,14 +20,14 @@ export default function AdBanner() {
       });
   }, []);
 
-  // Si une pub active existe, on l'affiche
+  // Si une pub active existe, on l'affiche avec un alt optimisé
   if (ad) {
     return (
       <div className="my-6">
         <Link href={ad.link_url} target="_blank" rel="noopener noreferrer">
           <img
             src={ad.image_url}
-            alt={ad.alt_text || "Publicité"}
+            alt={ad.alt_text || "Publicité - snay3i, m3alem, artisan, services au Maroc"}
             className="w-full h-24 object-cover rounded-lg shadow hover:shadow-md transition-shadow"
           />
         </Link>

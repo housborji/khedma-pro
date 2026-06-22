@@ -32,6 +32,10 @@ export default function Footer() {
       <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
         © 2026 KhedmaPro. Tous droits réservés.
       </div>
+      {/* Ligne SEO locale discrète */}
+      <p className="text-center text-[10px] text-gray-600/50 mt-1">
+        Khedmapro : La plateforme pour trouver un snay3i, m3alem aw khaddam fi l'Maroc (معلم، صنايعي، خدمة).
+      </p>
     </footer>
   );
 }
