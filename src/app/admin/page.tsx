@@ -59,6 +59,24 @@ async function deletePhotosFromStorage(photos: string[] | null) {
   }
 }
 
+// --- Rate Limiting simple ---
+const RATE_LIMIT_KEY = "admin_login_attempts";
+const MAX_ATTEMPTS = 5;
+const BLOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+function getRateLimitData(): { attempts: number; blockedUntil: number } {
+  if (typeof window === "undefined") return { attempts: 0, blockedUntil: 0 };
+  try {
+    const raw = localStorage.getItem(RATE_LIMIT_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { attempts: 0, blockedUntil: 0 };
+}
+
+function updateRateLimitData(data: { attempts: number; blockedUntil: number }) {
+  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
+}
+
 export default function AdminPage() {
   const [pendingRequests, setPendingRequests] = useState<Request[]>([]);
   const [openRequests, setOpenRequests] = useState<Request[]>([]);
@@ -102,6 +120,16 @@ export default function AdminPage() {
   };
 
   const handleLogin = () => {
+    const { attempts, blockedUntil } = getRateLimitData();
+    const now = Date.now();
+
+    // Vérifier si le compte est bloqué
+    if (blockedUntil > 0 && now < blockedUntil) {
+      const minutesLeft = Math.ceil((blockedUntil - now) / 60000);
+      toast.error(`Trop de tentatives. Réessayez dans ${minutesLeft} minute(s).`);
+      return;
+    }
+
     const storedHash = process.env.NEXT_PUBLIC_ADMIN_PASSWORD_HASH;
     if (!storedHash) {
       toast.error("Erreur de configuration");
@@ -109,10 +137,21 @@ export default function AdminPage() {
     }
     const enteredHash = crypto.createHash("sha256").update(password).digest("hex");
     if (`sha256:${enteredHash}` === storedHash) {
+      // Réinitialiser les tentatives en cas de succès
+      updateRateLimitData({ attempts: 0, blockedUntil: 0 });
       setAuthenticated(true);
       loadAll();
     } else {
-      toast.error("Mot de passe incorrect");
+      const newAttempts = attempts + 1;
+      const newBlockedUntil = newAttempts >= MAX_ATTEMPTS ? now + BLOCK_DURATION_MS : 0;
+      updateRateLimitData({ attempts: newAttempts, blockedUntil: newBlockedUntil });
+
+      const remaining = MAX_ATTEMPTS - newAttempts;
+      if (remaining > 0) {
+        toast.error(`Mot de passe incorrect. Il vous reste ${remaining} tentative(s).`);
+      } else {
+        toast.error("Compte bloqué pour 15 minutes suite à trop de tentatives.");
+      }
     }
   };
 
