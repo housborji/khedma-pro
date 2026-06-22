@@ -36,6 +36,7 @@ export default function RootLayout({
         <meta property="og:image" content="https://www.khedmapro.com/icons/home.png" />
         <meta property="og:url" content="https://www.khedmapro.com" />
         <meta property="og:type" content="website" />
+        <meta name="google-site-verification" content="1RbsxssRWP16l9Y764wB-fboBGOEgD0AXkmHKr8qySA" />
       </head>
       <body className="min-h-screen flex flex-col bg-white">
         <Navbar />
