@@ -18,15 +18,15 @@ import { toast, Toaster } from "sonner";
 import AdBanner from "@/components/ads/AdBanner";
 
 const CATEGORIES = [
-  "Plomberie (Plombier - معلم الماء)",
-  "Électricité (كهربائي)",
-  "Peinture (صباغ)",
-  "Menuiserie (نجار)",
-  "Nettoyage (خدمة التنظيف)",
-  "Jardinage (بستاني)",
-  "Climatisation (تصليح التكييف)",
-  "Déménagement (نقل الأثاث)",
-  "Autre / إصلاحات عامة",
+  "Plomberie",
+  "Électricité",
+  "Peinture",
+  "Menuiserie",
+  "Nettoyage",
+  "Jardinage",
+  "Climatisation",
+  "Déménagement",
+  "Autre",
 ];
 
 const CITIES = [
@@ -61,7 +61,7 @@ export default function DemanderPage() {
     client_phone: "",
     title: "",
     description: "",
-    category: "Plomberie (Plombier - معلم الماء)",
+    category: "Plomberie",
     city: "Casablanca",
     neighborhood: "",
     is_urgent: false,
@@ -199,7 +199,7 @@ export default function DemanderPage() {
 
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl">🔨 Publier une demande (Snay3i)</CardTitle>
+          <CardTitle className="text-2xl">🔨 Publier une demande</CardTitle>
           <CardDescription>
             Décrivez votre besoin, ajoutez jusqu&apos;à {MAX_PHOTOS} photos (8 Mo max par fichier). Votre demande sera validée avant d&apos;être visible.
           </CardDescription>
@@ -248,7 +248,7 @@ export default function DemanderPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Catégorie / Service (Snay3i)</label>
+                <label className="text-sm font-medium">Catégorie</label>
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -344,7 +344,7 @@ export default function DemanderPage() {
               className="w-full bg-red-600 hover:bg-red-700"
               disabled={loading}
             >
-              {loading ? "Publication en cours..." : "📤 Publier la demande (Snay3i)"}
+              {loading ? "Publication en cours..." : "📤 Publier la demande"}
             </Button>
           </form>
         </CardContent>
