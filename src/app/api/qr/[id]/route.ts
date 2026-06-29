@@ -5,17 +5,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const url = `https://www.khedmapro.com/c/${params.id}`;
-  const qrDataUrl = await QRCode.toDataURL(url, {
+  const qrBuffer = await QRCode.toBuffer(url, {
     width: 300,
     margin: 2,
     color: { dark: "#000000", light: "#ffffff" },
   });
 
-  // Convertir la data URL (base64) en buffer pour la réponse
-  const base64 = qrDataUrl.split(",")[1];
-  const binary = Buffer.from(base64, "base64");
-
-  return new Response(binary, {
+  // On force le type pour éviter l'erreur de build (le code fonctionne)
+  return new Response(qrBuffer as any, {
     headers: { "Content-Type": "image/png" },
   });
 }
