@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -42,7 +43,22 @@ interface Ad {
   created_at: string;
 }
 
-// Fonction pour supprimer les fichiers du bucket photos
+interface Client {
+  id: string;
+  nom: string;
+  metier: string;
+  photo: string;
+  telephone: string;
+  email: string;
+  site: string;
+  instagram: string;
+  facebook: string;
+  whatsapp: string;
+  bio: string;
+  created_at: string;
+}
+
+// Suppression des fichiers du bucket photos
 async function deletePhotosFromStorage(photos: string[] | null) {
   if (!photos || photos.length === 0) return;
   const filesToDelete = photos
@@ -59,10 +75,10 @@ async function deletePhotosFromStorage(photos: string[] | null) {
   }
 }
 
-// --- Rate Limiting simple ---
+// Rate limiting
 const RATE_LIMIT_KEY = "admin_login_attempts";
 const MAX_ATTEMPTS = 5;
-const BLOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const BLOCK_DURATION_MS = 15 * 60 * 1000;
 
 function getRateLimitData(): { attempts: number; blockedUntil: number } {
   if (typeof window === "undefined") return { attempts: 0, blockedUntil: 0 };
@@ -84,34 +100,27 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
 
-  // État pour la gestion des pubs
   const [ads, setAds] = useState<Ad[]>([]);
   const [newAd, setNewAd] = useState({ title: "", image_url: "", link_url: "", alt_text: "Publicité" });
+
+  const [clients, setClients] = useState<Client[]>([]);
+  const [newClient, setNewClient] = useState({
+    nom: "", metier: "", photo: "", telephone: "", email: "",
+    site: "", instagram: "", facebook: "", whatsapp: "", bio: ""
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      const { data: pendingData } = await supabase
-        .from("service_requests")
-        .select("*")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+      const { data: pendingData } = await supabase.from("service_requests").select("*").eq("status", "pending").order("created_at", { ascending: false });
       setPendingRequests(pendingData || []);
-
-      const { data: openData } = await supabase
-        .from("service_requests")
-        .select("*")
-        .eq("status", "open")
-        .order("created_at", { ascending: false })
-        .limit(50);
+      const { data: openData } = await supabase.from("service_requests").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50);
       setOpenRequests(openData || []);
-
-      // Charger les pubs
-      const { data: adsData } = await supabase
-        .from("ads")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data: adsData } = await supabase.from("ads").select("*").order("created_at", { ascending: false });
       setAds(adsData || []);
+      const { data: clientsData } = await supabase.from("clients").select("*").order("created_at", { ascending: false });
+      setClients(clientsData || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -122,22 +131,15 @@ export default function AdminPage() {
   const handleLogin = () => {
     const { attempts, blockedUntil } = getRateLimitData();
     const now = Date.now();
-
-    // Vérifier si le compte est bloqué
     if (blockedUntil > 0 && now < blockedUntil) {
       const minutesLeft = Math.ceil((blockedUntil - now) / 60000);
       toast.error(`Trop de tentatives. Réessayez dans ${minutesLeft} minute(s).`);
       return;
     }
-
     const storedHash = process.env.NEXT_PUBLIC_ADMIN_PASSWORD_HASH;
-    if (!storedHash) {
-      toast.error("Erreur de configuration");
-      return;
-    }
+    if (!storedHash) { toast.error("Erreur de configuration"); return; }
     const enteredHash = crypto.createHash("sha256").update(password).digest("hex");
     if (`sha256:${enteredHash}` === storedHash) {
-      // Réinitialiser les tentatives en cas de succès
       updateRateLimitData({ attempts: 0, blockedUntil: 0 });
       setAuthenticated(true);
       loadAll();
@@ -145,13 +147,8 @@ export default function AdminPage() {
       const newAttempts = attempts + 1;
       const newBlockedUntil = newAttempts >= MAX_ATTEMPTS ? now + BLOCK_DURATION_MS : 0;
       updateRateLimitData({ attempts: newAttempts, blockedUntil: newBlockedUntil });
-
       const remaining = MAX_ATTEMPTS - newAttempts;
-      if (remaining > 0) {
-        toast.error(`Mot de passe incorrect. Il vous reste ${remaining} tentative(s).`);
-      } else {
-        toast.error("Compte bloqué pour 15 minutes suite à trop de tentatives.");
-      }
+      toast.error(remaining > 0 ? `Mot de passe incorrect. Il vous reste ${remaining} tentative(s).` : "Compte bloqué pour 15 minutes.");
     }
   };
 
@@ -177,7 +174,6 @@ export default function AdminPage() {
     loadAll();
   };
 
-  // Gestion des pubs
   const addAd = async () => {
     if (!newAd.title || !newAd.image_url || !newAd.link_url) {
       toast.error("Tous les champs sont requis");
@@ -202,6 +198,61 @@ export default function AdminPage() {
     const { error } = await supabase.from("ads").delete().eq("id", id);
     if (error) toast.error("Erreur suppression");
     else { toast.success("Pub supprimée"); loadAll(); }
+  };
+
+  const addOrUpdateClient = async () => {
+    if (!newClient.nom || !newClient.telephone) {
+      toast.error("Nom et téléphone obligatoires");
+      return;
+    }
+    if (editingId) {
+      const { error } = await supabase.from("clients").update(newClient).eq("id", editingId);
+      if (error) toast.error("Erreur mise à jour");
+      else {
+        toast.success("Client mis à jour");
+        setEditingId(null);
+        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" });
+        loadAll();
+      }
+    } else {
+      const id = crypto.randomBytes(4).toString("hex");
+      const { error } = await supabase.from("clients").insert({ id, ...newClient });
+      if (error) toast.error("Erreur création");
+      else {
+        toast.success("Client créé");
+        const qrUrl = `/api/qr/${id}`;
+        toast.custom(
+          (t) => (
+            <div className="bg-white p-4 rounded-lg shadow-lg">
+              <img src={qrUrl} alt="QR Code" className="w-32 h-32 mx-auto" />
+              <p className="text-center text-sm mt-2">
+                <a href={qrUrl} download className="text-blue-600 hover:underline">Télécharger</a>
+              </p>
+            </div>
+          ),
+          { duration: Infinity }
+        );
+        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" });
+        loadAll();
+      }
+    }
+  };
+
+  const deleteClient = async (id: string) => {
+    if (!confirm("Supprimer ce client ?")) return;
+    await supabase.from("clients").delete().eq("id", id);
+    toast.success("Client supprimé");
+    loadAll();
+  };
+
+  const editClient = (client: Client) => {
+    setEditingId(client.id);
+    setNewClient({
+      nom: client.nom, metier: client.metier || "", photo: client.photo || "",
+      telephone: client.telephone, email: client.email || "", site: client.site || "",
+      instagram: client.instagram || "", facebook: client.facebook || "",
+      whatsapp: client.whatsapp || "", bio: client.bio || ""
+    });
   };
 
   if (!authenticated) {
@@ -238,11 +289,10 @@ export default function AdminPage() {
                     <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {/* Affichage des photos avec attribut alt optimisé */}
                     {req.photos && req.photos.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {req.photos.map((url, idx) => (
-                          <img key={idx} src={url} alt={`Photo de la demande - snay3i, m3alem, artisan`} className="w-16 h-16 object-cover rounded" />
+                          <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
                         ))}
                       </div>
                     )}
@@ -269,11 +319,10 @@ export default function AdminPage() {
                     <CardDescription>{req.category} • {req.city} • {req.client_name} ({req.client_phone})</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {/* Affichage des photos avec attribut alt optimisé */}
                     {req.photos && req.photos.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {req.photos.map((url, idx) => (
-                          <img key={idx} src={url} alt={`Photo de la demande - snay3i, m3alem, artisan`} className="w-16 h-16 object-cover rounded" />
+                          <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
                         ))}
                       </div>
                     )}
@@ -314,6 +363,61 @@ export default function AdminPage() {
                     {ad.is_active ? "Désactiver" : "Activer"}
                   </Button>
                   <Button variant="outline" className="flex-1 text-red-600" onClick={() => deleteAd(ad.id)}>
+                    Supprimer
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Section Cartes de visite */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">📇 Cartes de visite</h2>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>{editingId ? "Modifier" : "Ajouter"} une carte</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <Input placeholder="Nom *" value={newClient.nom} onChange={(e) => setNewClient({ ...newClient, nom: e.target.value })} />
+              <Input placeholder="Métier" value={newClient.metier} onChange={(e) => setNewClient({ ...newClient, metier: e.target.value })} />
+              <Input placeholder="Photo URL" value={newClient.photo} onChange={(e) => setNewClient({ ...newClient, photo: e.target.value })} />
+              <Input placeholder="Téléphone *" value={newClient.telephone} onChange={(e) => setNewClient({ ...newClient, telephone: e.target.value })} />
+              <Input placeholder="Email" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} />
+              <Input placeholder="Site web" value={newClient.site} onChange={(e) => setNewClient({ ...newClient, site: e.target.value })} />
+              <Input placeholder="Instagram (pseudo)" value={newClient.instagram} onChange={(e) => setNewClient({ ...newClient, instagram: e.target.value })} />
+              <Input placeholder="Facebook (URL)" value={newClient.facebook} onChange={(e) => setNewClient({ ...newClient, facebook: e.target.value })} />
+              <Input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => setNewClient({ ...newClient, whatsapp: e.target.value })} />
+              <Textarea placeholder="Bio" value={newClient.bio} onChange={(e) => setNewClient({ ...newClient, bio: e.target.value })} />
+              <div className="flex gap-2">
+                <Button onClick={addOrUpdateClient} className="flex-1">
+                  {editingId ? "Mettre à jour" : "Créer la carte"}
+                </Button>
+                {editingId && (
+                  <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" }); }}>
+                    Annuler
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {clients.map((c) => (
+              <Card key={c.id}>
+                <CardHeader>
+                  <CardTitle>{c.nom}</CardTitle>
+                  <CardDescription>{c.metier} • {c.telephone}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/qr/${c.id}`, "_blank")}>
+                    QR Code
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => editClient(c)}>
+                    Modifier
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-red-600" onClick={() => deleteClient(c.id)}>
                     Supprimer
                   </Button>
                 </CardContent>
