@@ -2,9 +2,12 @@ import QRCode from "qrcode";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const url = `https://www.khedmapro.com/c/${params.id}`;
+  // Attendre les paramètres (Next.js 16+)
+  const { id } = await params;
+
+  const url = `https://www.khedmapro.com/c/${id}`;
 
   // Générer le QR code en Data URL (base64)
   const dataUrl = await QRCode.toDataURL(url, {
