@@ -33,12 +33,12 @@ export default function CarteVisite({ client }: { client: Client }) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Fond rouge réduit + photo agrandie */}
+      {/* Fond rouge avec photo carrée aux coins arrondis */}
       <div className="relative w-full h-48 sm:h-56 bg-gradient-to-br from-red-500 to-red-700">
         <img
           src={client.photo}
           alt={client.nom}
-          className="w-40 h-40 sm:w-48 sm:h-48 rounded-full object-cover border-4 border-white absolute left-1/2 -translate-x-1/2 -bottom-12 sm:-bottom-16 shadow-lg"
+          className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl object-cover border-4 border-white absolute left-1/2 -translate-x-1/2 -bottom-12 sm:-bottom-16 shadow-lg"
         />
       </div>
 
