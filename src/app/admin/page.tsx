@@ -17,7 +17,7 @@ import { toast, Toaster } from "sonner";
 import crypto from "crypto";
 import ImageUpload from "@/components/ImageUpload";
 
-// Types (inchangés)
+// Types
 interface Request {
   id: string;
   client_name: string;
@@ -59,7 +59,7 @@ interface Client {
   created_at: string;
 }
 
-// Suppression des fichiers du bucket photos (inchangée)
+// Suppression des fichiers du bucket photos (pour les demandes)
 async function deletePhotosFromStorage(photos: string[] | null) {
   if (!photos || photos.length === 0) return;
   const filesToDelete = photos
@@ -70,13 +70,22 @@ async function deletePhotosFromStorage(photos: string[] | null) {
     .filter(Boolean) as string[];
   if (filesToDelete.length > 0) {
     const { error } = await supabase.storage.from("photos").remove(filesToDelete);
-    if (error) {
-      console.error("Erreur suppression fichiers:", error);
-    }
+    if (error) console.error("Erreur suppression fichiers:", error);
   }
 }
 
-// Rate limiting (inchangé)
+// Suppression d'une seule photo de client
+async function deleteClientPhoto(photoUrl: string | null) {
+  if (!photoUrl) return;
+  const parts = photoUrl.split("/public/photos/");
+  if (parts.length > 1) {
+    const filePath = parts[1];
+    const { error } = await supabase.storage.from("photos").remove([filePath]);
+    if (error) console.error("Erreur suppression photo client:", error);
+  }
+}
+
+// Rate limiting
 const RATE_LIMIT_KEY = "admin_login_attempts";
 const MAX_ATTEMPTS = 5;
 const BLOCK_DURATION_MS = 15 * 60 * 1000;
@@ -95,18 +104,15 @@ function updateRateLimitData(data: { attempts: number; blockedUntil: number }) {
 }
 
 export default function AdminPage() {
-  // État général
   const [pendingRequests, setPendingRequests] = useState<Request[]>([]);
   const [openRequests, setOpenRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
 
-  // Pubs
   const [ads, setAds] = useState<Ad[]>([]);
   const [newAd, setNewAd] = useState({ title: "", image_url: "", link_url: "", alt_text: "Publicité" });
 
-  // Clients
   const [clients, setClients] = useState<Client[]>([]);
   const [newClient, setNewClient] = useState({
     nom: "", metier: "", photo: "", telephone: "", email: "",
@@ -114,10 +120,8 @@ export default function AdminPage() {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Onglet actif
   const [tab, setTab] = useState<"demandes" | "pubs" | "cartes">("demandes");
 
-  // Chargement de toutes les données
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -136,7 +140,6 @@ export default function AdminPage() {
     }
   };
 
-  // Connexion (inchangée)
   const handleLogin = () => {
     const { attempts, blockedUntil } = getRateLimitData();
     const now = Date.now();
@@ -161,23 +164,61 @@ export default function AdminPage() {
     }
   };
 
-  // Actions demandes (inchangées)
-  const approve = async (id: string) => { /* ... même code ... */ };
-  const reject = async (id: string, photos: string[] | null) => { /* ... */ };
-  const deleteOpen = async (id: string, photos: string[] | null) => { /* ... */ };
+  const approve = async (id: string) => {
+    const { error } = await supabase.from("service_requests").update({ status: "open" }).eq("id", id);
+    if (error) toast.error("Erreur");
+    else { toast.success("Approuvée"); loadAll(); }
+  };
 
-  // Actions pubs (inchangées)
-  const addAd = async () => { /* ... */ };
-  const toggleAd = async (id: string, currentStatus: boolean) => { /* ... */ };
-  const deleteAd = async (id: string) => { /* ... */ };
+  const reject = async (id: string, photos: string[] | null) => {
+    await deletePhotosFromStorage(photos);
+    await supabase.from("contact_logs").delete().eq("request_id", id);
+    await supabase.from("service_requests").delete().eq("id", id);
+    toast.success("Rejetée");
+    loadAll();
+  };
 
-  // Actions clients
+  const deleteOpen = async (id: string, photos: string[] | null) => {
+    await deletePhotosFromStorage(photos);
+    await supabase.from("contact_logs").delete().eq("request_id", id);
+    await supabase.from("service_requests").delete().eq("id", id);
+    toast.success("Supprimée");
+    loadAll();
+  };
+
+  const addAd = async () => {
+    if (!newAd.title || !newAd.image_url || !newAd.link_url) {
+      toast.error("Tous les champs sont requis");
+      return;
+    }
+    const { error } = await supabase.from("ads").insert(newAd);
+    if (error) toast.error("Erreur ajout pub");
+    else {
+      toast.success("Pub ajoutée");
+      setNewAd({ title: "", image_url: "", link_url: "", alt_text: "Publicité" });
+      loadAll();
+    }
+  };
+
+  const toggleAd = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase.from("ads").update({ is_active: !currentStatus }).eq("id", id);
+    if (error) toast.error("Erreur");
+    else { toast.success(currentStatus ? "Pub désactivée" : "Pub activée"); loadAll(); }
+  };
+
+  const deleteAd = async (id: string) => {
+    const { error } = await supabase.from("ads").delete().eq("id", id);
+    if (error) toast.error("Erreur suppression");
+    else { toast.success("Pub supprimée"); loadAll(); }
+  };
+
   const addOrUpdateClient = async () => {
     if (!newClient.nom || !newClient.telephone) {
       toast.error("Nom et téléphone obligatoires");
       return;
     }
     if (editingId) {
+      // Mise à jour
       const { error } = await supabase.from("clients").update(newClient).eq("id", editingId);
       if (error) toast.error("Erreur mise à jour");
       else {
@@ -187,6 +228,7 @@ export default function AdminPage() {
         loadAll();
       }
     } else {
+      // Création
       const id = crypto.randomBytes(4).toString("hex");
       const { error } = await supabase.from("clients").insert({ id, ...newClient });
       if (error) toast.error("Erreur création");
@@ -212,9 +254,17 @@ export default function AdminPage() {
 
   const deleteClient = async (id: string) => {
     if (!confirm("Supprimer ce client ?")) return;
-    await supabase.from("clients").delete().eq("id", id);
-    toast.success("Client supprimé");
-    loadAll();
+    // Récupérer le client pour avoir l'URL de sa photo
+    const { data: clientData } = await supabase.from("clients").select("photo").eq("id", id).single();
+    if (clientData?.photo) {
+      await deleteClientPhoto(clientData.photo);
+    }
+    const { error } = await supabase.from("clients").delete().eq("id", id);
+    if (error) toast.error("Erreur suppression");
+    else {
+      toast.success("Client supprimé");
+      loadAll();
+    }
   };
 
   const editClient = (client: Client) => {
@@ -227,12 +277,10 @@ export default function AdminPage() {
     });
   };
 
-  // Effet pour charger au login
   useEffect(() => {
     if (authenticated) loadAll();
   }, [authenticated]);
 
-  // Interface de connexion
   if (!authenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -252,36 +300,37 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
       <Toaster position="top-center" richColors />
-
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">🛡️ Administration</h1>
 
         {/* Onglets */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-8">
           <Button
             variant={tab === "demandes" ? "default" : "outline"}
             onClick={() => setTab("demandes")}
+            className="text-sm"
           >
             📋 Demandes
           </Button>
           <Button
             variant={tab === "pubs" ? "default" : "outline"}
             onClick={() => setTab("pubs")}
+            className="text-sm"
           >
             📢 Publicités
           </Button>
           <Button
             variant={tab === "cartes" ? "default" : "outline"}
             onClick={() => setTab("cartes")}
+            className="text-sm"
           >
             📇 Cartes de visite
           </Button>
         </div>
 
-        {/* Contenu selon l'onglet */}
+        {/* Contenu de l'onglet */}
         {tab === "demandes" && (
-          <div className="space-y-8">
-            {/* Demandes en attente */}
+          <div className="space-y-10">
             <section>
               <h2 className="text-2xl font-bold mb-4">📥 Demandes en attente</h2>
               {pendingRequests.length === 0 ? <p>Aucune</p> : (
@@ -311,7 +360,6 @@ export default function AdminPage() {
               )}
             </section>
 
-            {/* Demandes approuvées */}
             <section>
               <h2 className="text-2xl font-bold mb-4">✅ Demandes approuvées</h2>
               {openRequests.length === 0 ? <p>Aucune</p> : (
