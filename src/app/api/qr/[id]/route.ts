@@ -11,7 +11,8 @@ export async function GET(
     color: { dark: "#000000", light: "#ffffff" },
   });
 
-  return new Response(qrBuffer, {
+  // Convertir le Buffer en Uint8Array pour compatibilité TypeScript
+  return new Response(new Uint8Array(qrBuffer), {
     headers: { "Content-Type": "image/png" },
   });
 }
