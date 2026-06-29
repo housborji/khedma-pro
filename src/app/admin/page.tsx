@@ -228,8 +228,11 @@ export default function AdminPage() {
         loadAll();
       }
     } else {
-      // Création
-      const id = crypto.randomBytes(4).toString("hex");
+      // Création – génération d'id compatible navigateur
+      const array = new Uint8Array(4);
+      window.crypto.getRandomValues(array);
+      const id = Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+
       const { error } = await supabase.from("clients").insert({ id, ...newClient });
       if (error) toast.error("Erreur création");
       else {
