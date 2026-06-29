@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
@@ -40,9 +39,9 @@ export default function RootLayout({
         <meta name="google-site-verification" content="1RbsxssRWP16l9Y764wB-fboBGOEgD0AXkmHKr8qySA" />
       </head>
       <body className="min-h-screen flex flex-col bg-white">
-        <Navbar />
-        <main className="flex-1 animate-fade-in">{children}</main>
-        <Footer />
+        <ConditionalLayout>
+          {children}
+        </ConditionalLayout>
         <Analytics />
       </body>
     </html>
