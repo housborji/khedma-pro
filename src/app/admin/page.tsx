@@ -17,7 +17,6 @@ import { toast, Toaster } from "sonner";
 import crypto from "crypto";
 import ImageUpload from "@/components/ImageUpload";
 
-// Types
 interface Request {
   id: string;
   client_name: string;
@@ -59,7 +58,6 @@ interface Client {
   created_at: string;
 }
 
-// Suppression des fichiers du bucket photos (pour les demandes)
 async function deletePhotosFromStorage(photos: string[] | null) {
   if (!photos || photos.length === 0) return;
   const filesToDelete = photos
@@ -74,7 +72,6 @@ async function deletePhotosFromStorage(photos: string[] | null) {
   }
 }
 
-// Suppression d'une seule photo de client
 async function deleteClientPhoto(photoUrl: string | null) {
   if (!photoUrl) return;
   const parts = photoUrl.split("/public/photos/");
@@ -85,7 +82,6 @@ async function deleteClientPhoto(photoUrl: string | null) {
   }
 }
 
-// Rate limiting
 const RATE_LIMIT_KEY = "admin_login_attempts";
 const MAX_ATTEMPTS = 5;
 const BLOCK_DURATION_MS = 15 * 60 * 1000;
@@ -218,7 +214,6 @@ export default function AdminPage() {
       return;
     }
     if (editingId) {
-      // Mise à jour
       const { error } = await supabase.from("clients").update(newClient).eq("id", editingId);
       if (error) toast.error("Erreur mise à jour");
       else {
@@ -228,7 +223,6 @@ export default function AdminPage() {
         loadAll();
       }
     } else {
-      // Création – génération d'id compatible navigateur
       const array = new Uint8Array(4);
       window.crypto.getRandomValues(array);
       const id = Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -257,7 +251,6 @@ export default function AdminPage() {
 
   const deleteClient = async (id: string) => {
     if (!confirm("Supprimer ce client ?")) return;
-    // Récupérer le client pour avoir l'URL de sa photo
     const { data: clientData } = await supabase.from("clients").select("photo").eq("id", id).single();
     if (clientData?.photo) {
       await deleteClientPhoto(clientData.photo);
@@ -306,32 +299,12 @@ export default function AdminPage() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">🛡️ Administration</h1>
 
-        {/* Onglets */}
         <div className="flex gap-2 mb-8">
-          <Button
-            variant={tab === "demandes" ? "default" : "outline"}
-            onClick={() => setTab("demandes")}
-            className="text-sm"
-          >
-            📋 Demandes
-          </Button>
-          <Button
-            variant={tab === "pubs" ? "default" : "outline"}
-            onClick={() => setTab("pubs")}
-            className="text-sm"
-          >
-            📢 Publicités
-          </Button>
-          <Button
-            variant={tab === "cartes" ? "default" : "outline"}
-            onClick={() => setTab("cartes")}
-            className="text-sm"
-          >
-            📇 Cartes de visite
-          </Button>
+          <Button variant={tab === "demandes" ? "default" : "outline"} onClick={() => setTab("demandes")} className="text-sm">📋 Demandes</Button>
+          <Button variant={tab === "pubs" ? "default" : "outline"} onClick={() => setTab("pubs")} className="text-sm">📢 Publicités</Button>
+          <Button variant={tab === "cartes" ? "default" : "outline"} onClick={() => setTab("cartes")} className="text-sm">📇 Cartes de visite</Button>
         </div>
 
-        {/* Contenu de l'onglet */}
         {tab === "demandes" && (
           <div className="space-y-10">
             <section>
@@ -347,9 +320,7 @@ export default function AdminPage() {
                       <CardContent className="space-y-2">
                         {req.photos && req.photos.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {req.photos.map((url, idx) => (
-                              <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
-                            ))}
+                            {req.photos.map((url, idx) => (<img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />))}
                           </div>
                         )}
                         <div className="flex gap-2">
@@ -362,7 +333,6 @@ export default function AdminPage() {
                 </div>
               )}
             </section>
-
             <section>
               <h2 className="text-2xl font-bold mb-4">✅ Demandes approuvées</h2>
               {openRequests.length === 0 ? <p>Aucune</p> : (
@@ -376,9 +346,7 @@ export default function AdminPage() {
                       <CardContent className="space-y-2">
                         {req.photos && req.photos.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {req.photos.map((url, idx) => (
-                              <img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
-                            ))}
+                            {req.photos.map((url, idx) => (<img key={idx} src={url} alt={`Photo ${idx + 1}`} className="w-16 h-16 object-cover rounded" />))}
                           </div>
                         )}
                         <Button variant="outline" className="w-full" onClick={() => deleteOpen(req.id, req.photos)}>🗑️ Supprimer</Button>
@@ -409,19 +377,13 @@ export default function AdminPage() {
                   <CardHeader>
                     <CardTitle className="flex justify-between">
                       {ad.title}
-                      <Badge variant={ad.is_active ? "default" : "secondary"}>
-                        {ad.is_active ? "Active" : "Inactive"}
-                      </Badge>
+                      <Badge variant={ad.is_active ? "default" : "secondary"}>{ad.is_active ? "Active" : "Inactive"}</Badge>
                     </CardTitle>
                     <CardDescription className="truncate">{ad.link_url}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex gap-2">
-                    <Button variant="outline" className="flex-1" onClick={() => toggleAd(ad.id, ad.is_active)}>
-                      {ad.is_active ? "Désactiver" : "Activer"}
-                    </Button>
-                    <Button variant="outline" className="flex-1 text-red-600" onClick={() => deleteAd(ad.id)}>
-                      Supprimer
-                    </Button>
+                    <Button variant="outline" className="flex-1" onClick={() => toggleAd(ad.id, ad.is_active)}>{ad.is_active ? "Désactiver" : "Activer"}</Button>
+                    <Button variant="outline" className="flex-1 text-red-600" onClick={() => deleteAd(ad.id)}>Supprimer</Button>
                   </CardContent>
                 </Card>
               ))}
@@ -432,7 +394,6 @@ export default function AdminPage() {
         {tab === "cartes" && (
           <section>
             <h2 className="text-2xl font-bold mb-4">📇 Cartes de visite</h2>
-
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>{editingId ? "Modifier" : "Ajouter"} une carte</CardTitle>
@@ -441,10 +402,7 @@ export default function AdminPage() {
                 <Input placeholder="Nom *" value={newClient.nom} onChange={(e) => setNewClient({ ...newClient, nom: e.target.value })} />
                 <Input placeholder="Métier" value={newClient.metier} onChange={(e) => setNewClient({ ...newClient, metier: e.target.value })} />
                 <label className="text-sm font-medium">Photo</label>
-                <ImageUpload
-                  onUpload={(url) => setNewClient({ ...newClient, photo: url })}
-                  currentUrl={newClient.photo}
-                />
+                <ImageUpload onUpload={(url) => setNewClient({ ...newClient, photo: url })} currentUrl={newClient.photo} />
                 <Input placeholder="Téléphone *" value={newClient.telephone} onChange={(e) => setNewClient({ ...newClient, telephone: e.target.value })} />
                 <Input placeholder="Email" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} />
                 <Input placeholder="Site web" value={newClient.site} onChange={(e) => setNewClient({ ...newClient, site: e.target.value })} />
@@ -453,18 +411,13 @@ export default function AdminPage() {
                 <Input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => setNewClient({ ...newClient, whatsapp: e.target.value })} />
                 <Textarea placeholder="Bio" value={newClient.bio} onChange={(e) => setNewClient({ ...newClient, bio: e.target.value })} />
                 <div className="flex gap-2">
-                  <Button onClick={addOrUpdateClient} className="flex-1">
-                    {editingId ? "Mettre à jour" : "Créer la carte"}
-                  </Button>
+                  <Button onClick={addOrUpdateClient} className="flex-1">{editingId ? "Mettre à jour" : "Créer la carte"}</Button>
                   {editingId && (
-                    <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" }); }}>
-                      Annuler
-                    </Button>
+                    <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" }); }}>Annuler</Button>
                   )}
                 </div>
               </CardContent>
             </Card>
-
             <div className="grid md:grid-cols-2 gap-4">
               {clients.map((c) => (
                 <Card key={c.id}>
@@ -473,15 +426,9 @@ export default function AdminPage() {
                     <CardDescription>{c.metier} • {c.telephone}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => window.open(`/api/qr/${c.id}`, "_blank")}>
-                      QR Code
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => editClient(c)}>
-                      Modifier
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600" onClick={() => deleteClient(c.id)}>
-                      Supprimer
-                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => window.open(`/api/qr/${c.id}`, "_blank")}>QR Code</Button>
+                    <Button variant="outline" size="sm" onClick={() => editClient(c)}>Modifier</Button>
+                    <Button variant="outline" size="sm" className="text-red-600" onClick={() => deleteClient(c.id)}>Supprimer</Button>
                   </CardContent>
                 </Card>
               ))}
