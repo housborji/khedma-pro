@@ -1,5 +1,6 @@
 import CarteVisite from "@/components/CarteVisite";
 
+// Chaque client a un identifiant secret (8 caractères)
 const clients: Record<string, {
   nom: string;
   metier: string;
@@ -12,7 +13,8 @@ const clients: Record<string, {
   whatsapp?: string;
   bio?: string;
 }> = {
-  ahmed: {
+  // Ahmed
+  x7G9kL2m: {
     nom: "Ahmed Alaoui",
     metier: "Plombier Professionnel",
     photo: "https://i.pravatar.cc/300?img=11",
@@ -24,7 +26,8 @@ const clients: Record<string, {
     whatsapp: "0612345678",
     bio: "Fort de 10 ans d'expérience, je propose mes services de plomberie pour tous vos travaux de dépannage, installation et rénovation. Intervention rapide et devis gratuit."
   },
-  fatima: {
+  // Fatima
+  K8mR3vLp: {
     nom: "Fatima Zahra",
     metier: "Électricienne",
     photo: "https://i.pravatar.cc/300?img=5",
@@ -34,11 +37,12 @@ const clients: Record<string, {
     whatsapp: "0623456789",
     bio: "Spécialiste en installation et dépannage électrique. Plus de 8 ans d'expérience à votre service."
   },
+  // Ajoute d'autres clients ici avec leurs propres identifiants secrets
 };
 
 export default async function CartePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const client = clients[id];
-  if (!client) return <div className="min-h-screen flex items-center justify-center">Client introuvable</div>;
+  if (!client) return <div className="min-h-screen flex items-center justify-center">Carte introuvable</div>;
   return <CarteVisite client={client} />;
 }
