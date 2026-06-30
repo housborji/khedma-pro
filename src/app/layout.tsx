@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "KhedmaPro - Trouvez un Snay3i, M3alem, Artisan ou Professionnel au Maroc",
   description:
     "Publiez votre demande et trouvez rapidement un snay3i, m3alem, khaddam, artisan ou technicien qualifié pour vos services à domicile, dépannage et réparations partout au Maroc (صنايعي، معلم، خدمات).",
+  themeColor: "#dc2626", // ← couleur par défaut (rouge)
 };
 
 export default function RootLayout({
@@ -28,9 +29,8 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${arabic.variable}`}>
       <head>
-        {/* Manifest global retiré pour éviter le conflit avec les cartes */}
         <link rel="icon" href="/icons/home1.png" sizes="192x192" type="image/png" />
-        <meta name="theme-color" content="#dc2626" />
+        {/* Pas de <meta name="theme-color"> ici */}
         <meta property="og:title" content="KhedmaPro - Trouvez un Snay3i, M3alem, Artisan ou Professionnel au Maroc" />
         <meta property="og:description" content="Publiez votre demande et trouvez rapidement un snay3i, m3alem, khaddam, artisan ou technicien qualifié pour vos services à domicile, dépannage et réparations partout au Maroc." />
         <meta property="og:image" content="https://www.khedmapro.com/icons/home.png" />
