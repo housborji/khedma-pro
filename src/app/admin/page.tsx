@@ -216,8 +216,27 @@ export default function AdminPage() {
       toast.error("Nom et téléphone obligatoires");
       return;
     }
+
+    // Convertir la chaîne vide du champ date en null pour Supabase
+    const payload = {
+      ...newClient,
+      expiry_date: newClient.expiry_date === "" ? null : newClient.expiry_date,
+    };
+
     if (editingId) {
-      const { error } = await supabase.from("clients").update(newClient).eq("id", editingId);
+      // Récupérer l'ancien client pour comparer la photo
+      const { data: oldClient } = await supabase
+        .from("clients")
+        .select("photo")
+        .eq("id", editingId)
+        .single();
+
+      // Supprimer l'ancienne photo si une nouvelle a été uploadée
+      if (oldClient?.photo && payload.photo && oldClient.photo !== payload.photo) {
+        await deleteClientPhoto(oldClient.photo);
+      }
+
+      const { error } = await supabase.from("clients").update(payload).eq("id", editingId);
       if (error) toast.error("Erreur mise à jour");
       else {
         toast.success("Client mis à jour");
@@ -230,7 +249,7 @@ export default function AdminPage() {
       window.crypto.getRandomValues(array);
       const id = Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
 
-      const { error } = await supabase.from("clients").insert({ id, ...newClient });
+      const { error } = await supabase.from("clients").insert({ id, ...payload });
       if (error) toast.error("Erreur création");
       else {
         toast.success("Client créé");
@@ -420,7 +439,6 @@ export default function AdminPage() {
                 <Input placeholder="Facebook (URL)" value={newClient.facebook} onChange={(e) => setNewClient({ ...newClient, facebook: e.target.value })} />
                 <Input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => setNewClient({ ...newClient, whatsapp: e.target.value })} />
 
-                {/* Nouveaux champs Brouillon + Expiration */}
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="draft"
@@ -453,7 +471,6 @@ export default function AdminPage() {
               </CardContent>
             </Card>
 
-            {/* Liste des clients avec dates */}
             <div className="grid md:grid-cols-2 gap-4">
               {clients.map((c) => (
                 <Card key={c.id}>
