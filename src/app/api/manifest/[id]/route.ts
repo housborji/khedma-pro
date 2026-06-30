@@ -11,7 +11,6 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  // Vérifier que le client existe bien en base
   const { data: client } = await supabase
     .from("clients")
     .select("nom")

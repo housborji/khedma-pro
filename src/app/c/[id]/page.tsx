@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import CarteVisite from "@/components/CarteVisite";
+import type { Metadata } from "next";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,18 @@ const supabase = createClient(
 async function getClient(id: string) {
   const { data } = await supabase.from("clients").select("*").eq("id", id).single();
   return data;
+}
+
+// 🆕 Génère un manifest personnalisé pour ce client
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  return {
+    manifest: `/api/manifest/${id}`,
+  };
 }
 
 export default async function CartePage({
