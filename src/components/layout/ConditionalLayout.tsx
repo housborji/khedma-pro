@@ -8,11 +8,12 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   const pathname = usePathname();
   const isCarte = pathname.startsWith("/c/");
 
+  // Pour les pages de carte de visite : fond noir, pas de header/footer
   if (isCarte) {
-    // Aucun header, aucun footer pour les cartes privées
-    return <>{children}</>;
+    return <div className="min-h-screen bg-black">{children}</div>;
   }
 
+  // Pour le reste du site : header + contenu + footer
   return (
     <>
       <Navbar />

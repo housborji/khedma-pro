@@ -12,7 +12,7 @@ async function getClient(id: string) {
   return data;
 }
 
-// 🆕 Génère un manifest personnalisé pour ce client
+// Manifest personnalisé pour chaque client
 export async function generateMetadata({
   params,
 }: {
@@ -21,6 +21,7 @@ export async function generateMetadata({
   const { id } = await params;
   return {
     manifest: `/api/manifest/${id}`,
+    robots: "noindex, nofollow",
   };
 }
 
