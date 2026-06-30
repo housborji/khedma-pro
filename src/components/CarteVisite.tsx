@@ -13,7 +13,7 @@ interface Client {
   facebook?: string;
   instagram?: string;
   site?: string;
-  bio?: string;
+  bio?: string; // laissé dans l'interface pour compatibilité, mais non affiché
 }
 
 // Icône Facebook (SVG complet)
@@ -37,7 +37,7 @@ const ShareIcon = () => (
   </svg>
 );
 
-// Icône Téléphone (SVG complet, utilisée dans le carré noir "Contact")
+// Icône Téléphone
 const PhoneIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
     <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.25 1.01l-2.2 2.2z" />
@@ -49,9 +49,7 @@ export default function CarteVisite({ client }: { client: Client }) {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Partie haute avec dégradé */}
       <div className="bg-gradient-to-b from-[#dbe2e8] to-[#a4c4e8] pb-8">
-        {/* Photo + Profil */}
         <div className="relative text-center">
           <div
             className="w-full h-[350px]"
@@ -82,9 +80,7 @@ export default function CarteVisite({ client }: { client: Client }) {
           </div>
         </div>
 
-        {/* Boutons ronds */}
         <div className="flex justify-start gap-[15px] px-5 -mt-2.5 flex-wrap">
-          {/* Téléphone */}
           <a
             href={`tel:${client.telephone}`}
             className="w-[45px] h-[45px] bg-[#1b4282] text-white rounded-full flex justify-center items-center text-lg shadow-md hover:scale-105 transition-transform"
@@ -92,7 +88,6 @@ export default function CarteVisite({ client }: { client: Client }) {
             <PhoneIcon />
           </a>
 
-          {/* Email */}
           <a
             href={`mailto:${client.email}`}
             className="w-[45px] h-[45px] bg-[#1b4282] text-white rounded-full flex justify-center items-center text-lg shadow-md hover:scale-105 transition-transform"
@@ -102,7 +97,6 @@ export default function CarteVisite({ client }: { client: Client }) {
             </svg>
           </a>
 
-          {/* WhatsApp */}
           <a
             href={`https://wa.me/${tel.replace(/^0/, "212")}`}
             target="_blank" rel="noopener noreferrer"
@@ -113,7 +107,6 @@ export default function CarteVisite({ client }: { client: Client }) {
             </svg>
           </a>
 
-          {/* Facebook (affiché seulement si renseigné) */}
           {client.facebook && (
             <a
               href={client.facebook}
@@ -124,7 +117,6 @@ export default function CarteVisite({ client }: { client: Client }) {
             </a>
           )}
 
-          {/* Instagram (affiché seulement si renseigné) */}
           {client.instagram && (
             <a
               href={`https://instagram.com/${client.instagram}`}
@@ -137,11 +129,9 @@ export default function CarteVisite({ client }: { client: Client }) {
         </div>
       </div>
 
-      {/* Carte Contact */}
       <div className="bg-black px-5 pt-6 pb-8">
         <div className="bg-white rounded-[20px] p-5 shadow-md">
           <div className="flex items-center mb-4">
-            {/* Carré noir avec icône téléphone blanche */}
             <div className="w-10 h-10 bg-black text-white rounded-[10px] flex justify-center items-center mr-4 text-lg">
               <PhoneIcon />
             </div>
@@ -167,10 +157,8 @@ export default function CarteVisite({ client }: { client: Client }) {
             </div>
           )}
 
-          {/* Boutons du bas (QR, Partager, Contact) */}
           <div className="flex justify-between items-center mt-5">
             <div className="flex gap-2.5">
-              {/* QR Code */}
               <a
                 href={`/api/qr/${client.id || ""}`}
                 target="_blank" rel="noopener noreferrer"
@@ -180,8 +168,6 @@ export default function CarteVisite({ client }: { client: Client }) {
                   <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13-2h-2v3h3v2h-3v2h-2v-3h-2v-2h2v-2h3v2zm-1-1h-2v-2h2v2z" />
                 </svg>
               </a>
-
-              {/* Partager */}
               <button
                 onClick={() => {
                   if (navigator.share) {
@@ -195,8 +181,6 @@ export default function CarteVisite({ client }: { client: Client }) {
                 <ShareIcon />
               </button>
             </div>
-
-            {/* Ajouter au contact (vCard) */}
             <a
               href={`/api/vcard/${client.id || ""}`}
               className="bg-[#1b4282] text-white px-5 py-2.5 rounded-[30px] flex items-center gap-2.5 text-sm font-bold hover:bg-[#153366] transition-colors"

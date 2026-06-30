@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea"; // Gardé pour les autres sections, mais plus utilisé pour bio
 import {
   Card,
   CardContent,
@@ -54,7 +54,6 @@ interface Client {
   instagram: string;
   facebook: string;
   whatsapp: string;
-  bio: string;
   created_at: string;
 }
 
@@ -112,7 +111,7 @@ export default function AdminPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [newClient, setNewClient] = useState({
     nom: "", metier: "", photo: "", telephone: "", email: "",
-    site: "", instagram: "", facebook: "", whatsapp: "", bio: ""
+    site: "", instagram: "", facebook: "", whatsapp: ""
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -219,7 +218,7 @@ export default function AdminPage() {
       else {
         toast.success("Client mis à jour");
         setEditingId(null);
-        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" });
+        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "" });
         loadAll();
       }
     } else {
@@ -243,7 +242,7 @@ export default function AdminPage() {
           ),
           { duration: Infinity }
         );
-        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" });
+        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "" });
         loadAll();
       }
     }
@@ -269,7 +268,7 @@ export default function AdminPage() {
       nom: client.nom, metier: client.metier || "", photo: client.photo || "",
       telephone: client.telephone, email: client.email || "", site: client.site || "",
       instagram: client.instagram || "", facebook: client.facebook || "",
-      whatsapp: client.whatsapp || "", bio: client.bio || ""
+      whatsapp: client.whatsapp || ""
     });
   };
 
@@ -409,11 +408,11 @@ export default function AdminPage() {
                 <Input placeholder="Instagram (pseudo)" value={newClient.instagram} onChange={(e) => setNewClient({ ...newClient, instagram: e.target.value })} />
                 <Input placeholder="Facebook (URL)" value={newClient.facebook} onChange={(e) => setNewClient({ ...newClient, facebook: e.target.value })} />
                 <Input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => setNewClient({ ...newClient, whatsapp: e.target.value })} />
-                <Textarea placeholder="Bio" value={newClient.bio} onChange={(e) => setNewClient({ ...newClient, bio: e.target.value })} />
+                {/* Champ bio supprimé */}
                 <div className="flex gap-2">
                   <Button onClick={addOrUpdateClient} className="flex-1">{editingId ? "Mettre à jour" : "Créer la carte"}</Button>
                   {editingId && (
-                    <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", bio: "" }); }}>Annuler</Button>
+                    <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "" }); }}>Annuler</Button>
                   )}
                 </div>
               </CardContent>
