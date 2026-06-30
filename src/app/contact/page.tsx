@@ -2,6 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MapPin } from "lucide-react";
 import AdBanner from "@/components/ads/AdBanner";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+};
 
 export default function ContactPage() {
   return (

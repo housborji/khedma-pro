@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${arabic.variable}`}>
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        {/* Manifest global retiré pour éviter le conflit avec les cartes */}
         <link rel="icon" href="/icons/home1.png" sizes="192x192" type="image/png" />
         <meta name="theme-color" content="#dc2626" />
         <meta property="og:title" content="KhedmaPro - Trouvez un Snay3i, M3alem, Artisan ou Professionnel au Maroc" />

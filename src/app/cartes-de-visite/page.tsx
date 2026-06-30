@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
+  manifest: "/manifest.json",
   title: "Cartes de Visite Digitales avec QR Code - KhedmaPro",
   description:
     "Créez votre carte de visite digitale professionnelle avec QR code. Simple, rapide, et accessible partout. Idéal pour artisans et professionnels au Maroc.",

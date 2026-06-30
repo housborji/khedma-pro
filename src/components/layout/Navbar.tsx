@@ -9,6 +9,7 @@ const links = [
   { href: "/", label: "Accueil" },
   { href: "/demandes", label: "Voir les demandes" },
   { href: "/comment-ca-marche", label: "Comment ça marche ?" },
+  { href: "/cartes-de-visite", label: "Cartes Visite" }, // ← Lien ajouté
   { href: "/mentions-legales", label: "Mentions légales" },
   { href: "/contact", label: "Contact" },
 ];

@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Wrench, Phone, Shield, Zap } from "lucide-react";
 import AdBanner from "@/components/ads/AdBanner";
+
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+};
 
 export default function Home() {
   return (

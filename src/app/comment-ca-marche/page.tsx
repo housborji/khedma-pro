@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PenTool, MessageCircle, CheckCircle } from "lucide-react";
+
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+};
 
 export default function CommentCaMarchePage() {
   return (
@@ -18,7 +23,6 @@ export default function CommentCaMarchePage() {
       </div>
 
       <div className="max-w-5xl mx-auto grid gap-8 md:grid-cols-3">
-        {/* Étape 1 */}
         <Card className="text-center border-t-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="mx-auto bg-red-100 w-14 h-14 rounded-full flex items-center justify-center mb-4">
@@ -33,7 +37,6 @@ export default function CommentCaMarchePage() {
           </CardHeader>
         </Card>
 
-        {/* Étape 2 */}
         <Card className="text-center border-t-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="mx-auto bg-red-100 w-14 h-14 rounded-full flex items-center justify-center mb-4">
@@ -48,7 +51,6 @@ export default function CommentCaMarchePage() {
           </CardHeader>
         </Card>
 
-        {/* Étape 3 */}
         <Card className="text-center border-t-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="mx-auto bg-red-100 w-14 h-14 rounded-full flex items-center justify-center mb-4">

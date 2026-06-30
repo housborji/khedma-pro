@@ -1,3 +1,9 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+};
+
 export default function MentionsLegalesPage() {
   return (
     <main className="min-h-screen bg-white py-16 px-4">
