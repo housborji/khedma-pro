@@ -8,7 +8,11 @@ const supabase = createClient(
 );
 
 async function getClient(id: string) {
-  const { data } = await supabase.from("clients").select("*").eq("id", id).single();
+  const { data } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("id", id)
+    .single();
   return data;
 }
 
@@ -21,7 +25,7 @@ export async function generateMetadata({
   return {
     manifest: `/api/manifest/${id}`,
     robots: "noindex, nofollow",
-    themeColor: "#000000", // ← barre de statut noire
+    themeColor: "#000000",
   };
 }
 
@@ -32,6 +36,37 @@ export default async function CartePage({
 }) {
   const { id } = await params;
   const client = await getClient(id);
-  if (!client) return <div className="min-h-screen flex items-center justify-center">Carte introuvable</div>;
+
+  // Carte inexistante
+  if (!client) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        Carte introuvable
+      </div>
+    );
+  }
+
+  // Brouillon -> introuvable
+  if (client.draft) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        Carte introuvable
+      </div>
+    );
+  }
+
+  // Date d'expiration dépassée -> expirée
+  if (client.expiry_date) {
+    const now = new Date();
+    const expiry = new Date(client.expiry_date);
+    if (now > expiry) {
+      return (
+        <div className="min-h-screen bg-black flex items-center justify-center text-white">
+          Carte expirée
+        </div>
+      );
+    }
+  }
+
   return <CarteVisite client={client} />;
 }

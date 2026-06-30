@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea"; // Gardé pour les autres sections, mais plus utilisé pour bio
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -54,6 +55,8 @@ interface Client {
   instagram: string;
   facebook: string;
   whatsapp: string;
+  draft: boolean;
+  expiry_date: string | null;
   created_at: string;
 }
 
@@ -111,7 +114,8 @@ export default function AdminPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [newClient, setNewClient] = useState({
     nom: "", metier: "", photo: "", telephone: "", email: "",
-    site: "", instagram: "", facebook: "", whatsapp: ""
+    site: "", instagram: "", facebook: "", whatsapp: "",
+    draft: false, expiry_date: ""
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -218,7 +222,7 @@ export default function AdminPage() {
       else {
         toast.success("Client mis à jour");
         setEditingId(null);
-        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "" });
+        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", draft: false, expiry_date: "" });
         loadAll();
       }
     } else {
@@ -242,7 +246,7 @@ export default function AdminPage() {
           ),
           { duration: Infinity }
         );
-        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "" });
+        setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", draft: false, expiry_date: "" });
         loadAll();
       }
     }
@@ -265,10 +269,17 @@ export default function AdminPage() {
   const editClient = (client: Client) => {
     setEditingId(client.id);
     setNewClient({
-      nom: client.nom, metier: client.metier || "", photo: client.photo || "",
-      telephone: client.telephone, email: client.email || "", site: client.site || "",
-      instagram: client.instagram || "", facebook: client.facebook || "",
-      whatsapp: client.whatsapp || ""
+      nom: client.nom,
+      metier: client.metier || "",
+      photo: client.photo || "",
+      telephone: client.telephone,
+      email: client.email || "",
+      site: client.site || "",
+      instagram: client.instagram || "",
+      facebook: client.facebook || "",
+      whatsapp: client.whatsapp || "",
+      draft: client.draft || false,
+      expiry_date: client.expiry_date || ""
     });
   };
 
@@ -408,26 +419,66 @@ export default function AdminPage() {
                 <Input placeholder="Instagram (pseudo)" value={newClient.instagram} onChange={(e) => setNewClient({ ...newClient, instagram: e.target.value })} />
                 <Input placeholder="Facebook (URL)" value={newClient.facebook} onChange={(e) => setNewClient({ ...newClient, facebook: e.target.value })} />
                 <Input placeholder="WhatsApp" value={newClient.whatsapp} onChange={(e) => setNewClient({ ...newClient, whatsapp: e.target.value })} />
-                {/* Champ bio supprimé */}
+
+                {/* Nouveaux champs Brouillon + Expiration */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="draft"
+                    checked={newClient.draft}
+                    onCheckedChange={(checked) => setNewClient({ ...newClient, draft: checked === true })}
+                  />
+                  <label htmlFor="draft" className="text-sm font-medium">
+                    🚧 Brouillon (carte introuvable)
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Valable jusqu'au (optionnel)</label>
+                  <Input
+                    type="date"
+                    value={newClient.expiry_date}
+                    onChange={(e) => setNewClient({ ...newClient, expiry_date: e.target.value })}
+                  />
+                </div>
+
                 <div className="flex gap-2">
-                  <Button onClick={addOrUpdateClient} className="flex-1">{editingId ? "Mettre à jour" : "Créer la carte"}</Button>
+                  <Button onClick={addOrUpdateClient} className="flex-1">
+                    {editingId ? "Mettre à jour" : "Créer la carte"}
+                  </Button>
                   {editingId && (
-                    <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "" }); }}>Annuler</Button>
+                    <Button variant="outline" onClick={() => { setEditingId(null); setNewClient({ nom: "", metier: "", photo: "", telephone: "", email: "", site: "", instagram: "", facebook: "", whatsapp: "", draft: false, expiry_date: "" }); }}>
+                      Annuler
+                    </Button>
                   )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Liste des clients avec dates */}
             <div className="grid md:grid-cols-2 gap-4">
               {clients.map((c) => (
                 <Card key={c.id}>
                   <CardHeader>
-                    <CardTitle>{c.nom}</CardTitle>
-                    <CardDescription>{c.metier} • {c.telephone}</CardDescription>
+                    <CardTitle className="flex justify-between items-center">
+                      <span>{c.nom}</span>
+                      {c.draft && <Badge variant="secondary">Brouillon</Badge>}
+                    </CardTitle>
+                    <CardDescription>
+                      {c.metier} • {c.telephone}
+                      <br />
+                      Créé le {new Date(c.created_at).toLocaleDateString("fr-FR")}
+                      {c.expiry_date && ` • Expire le ${new Date(c.expiry_date).toLocaleDateString("fr-FR")}`}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => window.open(`/api/qr/${c.id}`, "_blank")}>QR Code</Button>
-                    <Button variant="outline" size="sm" onClick={() => editClient(c)}>Modifier</Button>
-                    <Button variant="outline" size="sm" className="text-red-600" onClick={() => deleteClient(c.id)}>Supprimer</Button>
+                    <Button variant="outline" size="sm" onClick={() => window.open(`/api/qr/${c.id}`, "_blank")}>
+                      QR Code
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => editClient(c)}>
+                      Modifier
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-600" onClick={() => deleteClient(c.id)}>
+                      Supprimer
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
