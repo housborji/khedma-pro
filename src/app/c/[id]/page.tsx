@@ -12,7 +12,6 @@ async function getClient(id: string) {
   return data;
 }
 
-// Manifest personnalisé + couleur de thème pour chaque carte
 export async function generateMetadata({
   params,
 }: {
@@ -22,7 +21,7 @@ export async function generateMetadata({
   return {
     manifest: `/api/manifest/${id}`,
     robots: "noindex, nofollow",
-    themeColor: "#1b4282", // ← barre de statut bleue pour les cartes
+    themeColor: "#000000", // ← barre de statut noire
   };
 }
 
